@@ -49,7 +49,7 @@ class DoctorResource extends Resource
                                 'noche' => 'Turno Noche',    
                             ])
                             ->required()
-                            ->native(false), // Mejora la interfaz visual
+                            ->native(false), 
 
                         Forms\Components\TextInput::make('cupos_disponibles')
                             ->label('Cupos de atención')

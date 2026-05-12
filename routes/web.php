@@ -29,7 +29,6 @@ Route::get('/home', function () {
 })->name('home');
 
 Route::get('/reservar-cita', function () {
-    // Usamos el try-catch para atrapar cualquier error de base de datos
     try {
         $doctores = \App\Models\Doctor::where('esta_activo', true)->get();
         return view('paginas.citas.citas', compact('doctores'));
@@ -46,13 +45,13 @@ Route::get('/seleccion-manual', function () {
     return view('paginas.off-señas.off-señas');
 })->name('especialidad.manual');
 
-// --- Módulo de Señas ---
+
 
 Route::get('/reconocimiento-senas', function () {
     return view('paginas.on-señas.on-señas');
 })->name('señas');
 
-// --- Autenticación y API ---
+
 
 Route::post('/logout', function () {
     Auth::logout(); 
