@@ -1,0 +1,153 @@
+/* ? Ajustes determinado*/
+.centrado {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  margin: 0;
+  background: #f4f7f8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* TODO: logo y escaneo  */
+.logo {
+  width: 30%;
+  margin-bottom: 0px;
+}
+
+.panelescaneo {
+  width: 40%;
+  height: 80%;
+}
+
+/* ! CONTENEDORES*/
+.mitad {
+  width: 50%;
+  height: 100%;
+}
+
+/* ! CONTENEDOR IZQUIERDA*/
+.container-izquierda {
+  background-image: url(/imagenes/imgLogin/Espalda-Doctora.webp);
+  background-size: 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.imagen-doctora {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+/* ! CONTENEDOR DERECHA*/
+.container-derecha {
+  flex-direction: column;
+  padding-bottom: 3%;
+}
+
+.container-facil {
+  border: 7px solid #84a8d5;
+  border-radius: 25px;
+  flex-direction: column;
+  width: 80%;
+  height: 70%;
+  gap: 6%;
+  padding: 4%;
+}
+
+.panel-Facil {
+  width: 93%;
+  height: 80%;
+  border: 5px solid #429c84;
+  border-radius: 10px;
+}
+
+/* todo: TEXTO*/
+.container-derecha > p {
+  font-family: "Poppins", sans-serif;
+  font-size: 35px;
+  font-weight: 600;
+  color: #004643;
+  margin-top: -3%;
+  text-align: center;
+}
+
+.container-derecha .container-facil > p {
+  font-family: "Poppins", sans-serif;
+  font-size: 23px;
+  font-weight: 600;
+  color: #000000;
+  text-align: center;
+}
+
+span {
+  font-family: "Poppins", sans-serif;
+  font-size: 20px;
+  font-weight: 300;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* ! BOTONES */
+
+.botones-h {
+  display: flex;
+  flex-direction: row;
+  width: 95%;
+  justify-content: center;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.boton {
+  position: relative;
+  width: 45%;
+  padding: 2.5%;
+  border: 3px solid transparent;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: "Poppins", sans-serif;
+  color: white;
+
+  transition:
+    transform 0.50s ease,
+    filter 0.25s ease;
+
+}
+
+.escaner {
+  background:
+    linear-gradient(#60b18b, #60b18b) padding-box,
+    linear-gradient(90deg, #7ee8c6, #5bc0eb, #7ee8c6) border-box;
+}
+
+.CrearCuenta {
+  background:
+    linear-gradient(#3f5dbd, #3f5dbd) padding-box,
+    linear-gradient(90deg, #7ea6ff, #6dd5ed, #7ea6ff) border-box;
+}
+
+.boton:hover {
+  transform: translateY(-10px);
+}

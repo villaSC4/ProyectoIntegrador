@@ -1,0 +1,218 @@
+.seccion-senas {
+  width: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: "Poppins", serif;
+}
+
+.encabezado-senas {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 1%;
+}
+
+.encabezado-senas h1 {
+  margin: 0;
+  font-size: 34px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.encabezado-senas p {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1f1f1f;
+}
+
+.card {
+  width: 100%;
+  border: 4px solid #ffffff;
+  border-radius: 15px;
+  background-color: #ffffff44;
+  box-sizing: border-box;
+}
+
+
+/*TODO: AQUI ESTA LA PARTE DE VIDEOS TUTORIALES*/
+.video-card {
+  margin-bottom: 4%;
+  padding: 2.5% 3%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+}
+
+.video-card h4 {
+  margin: 0;
+  font-size: 23px;
+  font-weight: 800;
+  color: #000000;
+}
+
+.video {
+  width: 85%;
+  height: 540px;
+  border-radius: 15px;
+  overflow: hidden;
+  background-color: #ffffff;
+}
+
+.video-tutorial {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border: 0;
+  object-fit: cover;
+}
+
+.video-card .desc {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #000000;
+}
+
+/*TODO: AQUI ESTA LA PARTE DE RECONOCIMIENTO DE SEÑAS*/
+.reconocimiento-card {
+  padding: 3%;
+  text-align: center;
+}
+
+.texto-reconocimiento h3 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+  color: #000000;
+}
+
+.texto-reconocimiento p {
+  width: 85%;
+  margin: 0.5% auto 2%;
+  font-size: 15px;
+  font-weight: 500;
+  color: #1f1f1f;
+}
+
+.camara-reconocimiento {
+  width: 82%;
+  min-height: 260px;
+  margin: 0 auto;
+  padding: 3%;
+  border: 4px solid #5bbfbd;
+  border-radius: 15px;
+  background-color: #91d2d2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.camara-reconocimiento img {
+  width: 16%;
+  max-width: 120px;
+  min-width: 80px;
+  margin-bottom: 2%;
+  object-fit: contain;
+}
+
+.camara-reconocimiento p {
+  width: 70%;
+  margin: 0 0 2%;
+  font-size: 15px;
+  font-weight: 500;
+  color: #000000;
+}
+
+.camara-reconocimiento span {
+  width: auto;
+  padding: 0.7% 3%;
+  border-radius: 20px;
+  background-color: #4f7ee8;
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+/*TODO: AQUI ESTA LOS BOTNES DE OPCIONES*/
+.acciones-senas {
+  width: 100%;
+  margin-top: 2.5%;
+  display: flex;
+  justify-content: center;
+  gap: 5%;
+}
+
+.grupo-accion {
+  width: 32%;
+}
+
+.grupo-accion p {
+  margin: 0 0 2%;
+  font-size: 13px;
+  font-weight: 800;
+  color: #000000;
+}
+
+.boton-accion {
+  width: 100%;
+  min-height: 58px;
+  border-radius: 18px;
+  font-family: "Poppins", serif;
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.boton-horario {
+  background-color: #005b5b;
+  border: 3px solid #003c3c;
+}
+
+.boton-reintentar {
+  background-color: #b73b37;
+  border: 3px solid #7d2624;
+}
+
+.boton-accion:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
+}
+
+@media (max-width: 900px) {
+  .seccion-senas {
+    padding: 0 4%;
+  }
+
+  .encabezado-senas h1 {
+    font-size: 27px;
+  }
+
+  .video {
+    width: 100%;
+    height: 320px;
+  }
+
+  .camara-reconocimiento {
+    width: 100%;
+  }
+
+  .camara-reconocimiento p {
+    width: 90%;
+  }
+
+  .acciones-senas {
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .grupo-accion {
+    width: 100%;
+  }
+}

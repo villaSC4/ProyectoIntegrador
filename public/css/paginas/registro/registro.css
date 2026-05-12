@@ -1,0 +1,346 @@
+/*! NO TOCAR CONFIGURACION GENERAL */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background-color: #ffffff;
+}
+
+.cuerpo-completo {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  overflow: hidden;
+}
+
+
+
+/*todo: LADO IZQUIERDO - IMAGEN */
+.diseno-fondo {
+  width: 49%;
+  height: 100vh;
+  background-image: url("/imagenes/imgRegistro/Espalda-Doctora.webp");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding: 0;
+}
+
+.imagen-doctora {
+  width: 78%;
+  height: 96%;
+  object-fit: contain;
+  object-position: bottom center;
+  display: block;
+}
+
+
+
+/*TODO: LADO DERECHO - CONTENEDOR */
+.container-back {
+  width: 51%;
+  height: 100vh;
+  padding: 2% 4% 2% 2%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+
+
+/* ENLACE VOLVER */
+.volver-inicio {
+  width: 100%;
+  margin-bottom: 2%;
+  text-align: right;
+  color: #004d40;
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 15px;
+}
+
+.volver-inicio:hover {
+  color: #00796b;
+}
+
+
+/* TITULO DEL REGISTRO */
+.registration-area {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3vh;
+}
+
+.header-text {
+  width: 100%;
+  text-align: center;
+}
+
+.header-text h1 {
+  color: #003d33;
+  font-size: 42px;
+  font-weight: 900;
+}
+
+.header-text p {
+  color: #444444;
+  font-size: 15px;
+}
+
+
+/* TARJETA PRINCIPAL */
+.registration-card {
+  width: 100%;
+  min-height: 78vh;
+  background-color: #ffffff;
+  border-radius: 38px;
+  display: flex;
+  overflow: hidden;
+  box-shadow: 0 25px 55px rgba(0, 0, 0, 0.15);
+}
+
+
+/* FORMULARIO */
+.form-inputs {
+  width: 58%;
+  padding: 6% 6%;
+  display: flex;
+  flex-direction: column;
+  gap: 2%;
+}
+
+.form-inputs h2 {
+  margin-bottom: 5%;
+  color: #222222;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.field {
+  width: 100%;
+  margin-bottom: 4%;
+}
+
+.field label {
+  display: block;
+  margin-bottom: 2%;
+  color: #555555;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.field input {
+  width: 100%;
+  padding: 3.5% 4%;
+  border: 1px solid #dddddd;
+  border-radius: 14px;
+  background-color: #fbfbfb;
+  color: #222222;
+  outline: none;
+  font-size: 16px;
+}
+
+.field input:focus {
+  border-color: #3ca197;
+  box-shadow: 0 0 0 3px rgba(60, 161, 151, 0.16);
+}
+
+.boton-registro {
+  width: 100%;
+  margin-top: auto;
+  padding: 4%;
+  border: none;
+  border-radius: 15px;
+  background-color: #005b4f;
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.boton-registro:hover {
+  background-color: #003d33;
+  transform: translateY(-2px);
+}
+
+
+/* PANEL DE RECONOCIMIENTO FACIAL */
+.face-panel {
+  width: 50%;
+  padding: 6% 4%;
+  background-color: #3ca197;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.face-panel h3 {
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.face-panel p {
+  margin-top: 2%;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.scanner-box {
+  width: 70%;
+  aspect-ratio: 1 / 1;
+  margin: 10% 0 8%;
+  border-radius: 25px;
+  background-color: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.scanner-box img {
+  width: 82%;
+  height: 82%;
+  object-fit: contain;
+}
+
+.status-stack {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2vh;
+}
+
+.pill {
+  width: 100%;
+  padding: 4% 5%;
+  border-radius: 14px;
+  background-color: rgba(255, 255, 255, 0.22);
+  display: flex;
+  align-items: center;
+  gap: 4%;
+  font-size: 16px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.pill span {
+  width: 11px;
+  height: 11px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.pill.correcto span {
+  background-color: #00c853;
+  border-color: #00c853;
+}
+
+.pill.error span {
+  background-color: #e53935;
+  border-color: #e53935;
+}
+
+.field input[readonly] {
+  background-color: #f3f7f6;
+  color: #333333;
+  cursor: not-allowed;
+}
+
+#contenedor-video video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; 
+    border-radius: 15px; 
+    display: block;
+}
+
+#contenedor-video canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+
+/* RESPONSIVE SOLO PARA PANTALLAS PEQUEÑAS */
+@media (max-width: 850px) {
+  .cuerpo-completo {
+    flex-direction: column;
+  }
+
+  .diseno-fondo,
+  .container-back {
+    width: 100%;
+  }
+
+  .diseno-fondo {
+    min-height: 42vh;
+    background-size: 75%;
+  }
+
+  .imagen-doctora {
+    width: 55%;
+    height: 38vh;
+  }
+
+  .container-back {
+    padding: 5%;
+  }
+
+  .registration-card {
+    flex-direction: column;
+  }
+
+  .form-inputs,
+  .face-panel {
+    width: 100%;
+  }
+
+  .scanner-box {
+    width: 28%;
+  }
+}
+
+@media (max-width: 520px) {
+  .header-text h1 {
+    font-size: 32px;
+  }
+
+  .imagen-doctora {
+    width: 85%;
+  }
+
+  .registration-card {
+    border-radius: 24px;
+  }
+
+  .form-inputs,
+  .face-panel {
+    padding: 8% 6%;
+  }
+
+  .scanner-box {
+    width: 42%;
+  }
+}
