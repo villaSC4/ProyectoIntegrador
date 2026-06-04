@@ -1,91 +1,171 @@
-/*! NO MANIPULAR ESTA PARTE ES EL ESTILO DE EL CONTENIDO PRINCIPAL*/
+:root {
+  --fondo: #eef7f5;
+  --panel: #ffffff;
+  --panel-suave: #f7fbfb;
+  --texto: #173436;
+  --muted: #64787c;
+  --linea: #d9e8e7;
+  --verde: #0d766f;
+  --verde-oscuro: #073f3d;
+  --azul: #2f6fed;
+}
 
 * {
   box-sizing: border-box;
-  width: 100%;
   margin: 0;
   padding: 0;
 }
 
 body {
-  margin: 0;
+  min-height: 100vh;
+  font-family: "Poppins", Arial, sans-serif;
+  color: var(--texto);
+  background: var(--fondo);
+}
+
+button {
+  font: inherit;
 }
 
 .layout {
-  width: 100%;
-  height: 100vh;
-  display: flex;
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
 }
 
 #header {
-  width: 18%;
-  height: 100%;
-  position: fixed;
-  top: 0;
-  left: 0;
-}
-
-#footer {
-  width: 100%;
-  height: 14%;
   position: sticky;
   top: 0;
-  z-index: 900;
+  height: 100vh;
 }
 
 .contenido-derecho {
-  margin-left: 18%;
-  min-height: 100vh;
+  min-width: 0;
+}
+
+#footer {
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .contenido-principal {
-  width: 100%;
-  min-height: 100vh;
-  background-color: #50bda0;
-  background-image: url("/imagenes/Inicio/fondo.png");
-  background-repeat: repeat;
-  background-size: 35%; /* usa el tamaño real de la imagen */
-  background-position: 0 0;
-  padding: 2% 8% 5% 8%;
+  min-height: calc(100vh - 76px);
+  padding: 28px;
+  background:
+    linear-gradient(rgba(238, 247, 245, 0.60), rgba(238, 247, 245, 0.60)),
+    url("/imagenes/Inicio/fondo.png") center / 1080px repeat;
 }
 
-/*TODO: AQUI ESTA LA PARTE DE VIDEOS TUTORIALES*/
+.bienvenida {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 18px;
+  margin-bottom: 18px;
+}
 
-.video-card {
-  width: 100%;
-  margin-bottom: 5%;
-  padding: 2.5% 3%;
-  border: 4px solid #ffffff;
-  border-radius: 15px;
-  background-color: #ffffff44;
+.bienvenida > div:first-child,
+.resumen-paciente,
+.tarjeta {
+  border: 1px solid var(--linea);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: 0 10px 24px rgba(24, 62, 68, 0.06);
+}
+
+.bienvenida > div:first-child {
+  flex: 1;
+  padding: 22px;
+}
+
+.etiqueta {
+  width: fit-content;
+  display: inline-flex;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #e8f5f3;
+  color: var(--verde);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.bienvenida h1 {
+  margin-top: 10px;
+  font-size: 34px;
+  line-height: 1.15;
+}
+
+.bienvenida p,
+.tarjeta-cabecera p,
+.resumen-paciente span,
+.resumen-paciente small,
+.card-ob small {
+  color: var(--muted);
+}
+
+.bienvenida p {
+  max-width: 760px;
+  margin-top: 8px;
+  line-height: 1.7;
+}
+
+.resumen-paciente {
+  min-width: 310px;
+  padding: 18px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
-  gap: 15px;
-  text-align: center;
-  box-sizing: border-box;
 }
 
-.video-card h4 {
-  margin: 0;
-  font-family: "Poppins", serif;
-  font-size: 23px;
+.resumen-paciente span,
+.resumen-paciente small {
+  font-size: 12px;
   font-weight: 800;
-  color: #000000;
+  text-transform: uppercase;
+}
+
+.resumen-paciente strong {
+  margin: 6px 0;
+  font-size: 18px;
+}
+
+.contenido-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(340px, 0.65fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.tarjeta {
+  padding: 20px;
+}
+
+.tarjeta-cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.tarjeta-cabecera h2 {
+  font-size: 22px;
+}
+
+.tarjeta-cabecera p {
+  margin-top: 4px;
+  font-size: 13px;
 }
 
 .video {
-  width: 85%;
-  height: 540px;
-  border-radius: 15px;
-  overflow: hidden;
-  background-color: #ffffff;
-}
-
-.video .video {
   width: 100%;
-  height: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 1px solid var(--linea);
+  border-radius: 8px;
+  background: var(--panel-suave);
 }
 
 .video-tutorial {
@@ -93,113 +173,94 @@ body {
   height: 100%;
   display: block;
   border: 0;
-  object-fit: cover;
-}
-
-.video-card .desc {
-  margin: 0;
-  font-family: "Poppins", serif;
-  font-size: 18px;
-  font-weight: 600;
-  color: #000000;
-}
-
-@media (max-width: 900px) {
-  .video-card {
-    padding: 4%;
-  }
-
-  .video {
-    width: 100%;
-    height: 320px;
-  }
-
-  .video-card h4 {
-    font-size: 20px;
-  }
-
-  .video-card .desc {
-    font-size: 16px;
-  }
-}
-
-/*TODO: AQUI ESTA LAS TARJETAS DE OPCIONES*/
-.card-ob {
-  flex: 1;
-  gap: 2px;
-  border: 2px solid rgb(147, 147, 147);
-  padding: 10px;
-}
-
-.card-padre {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-
-  text-align: center;
-  padding: 4%;
-  box-sizing: border-box;
-}
-
-.card-padre {
-  border: 4px solid #ffffff;
-  background-color: #ffffff44;
-  border-radius: 15px;
-  display: flex;
-  justify-content: center;
-}
-
-.card-padre h2 {
-  margin-bottom: 2rem;
-  font-size: 23px;
-  text-align: center;
-  font-family: "Poppins", serif;
-  font-weight: 700;
-  color: #000000;
-}
-
-.card-ob {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  border-radius: 25px;
-  box-sizing: border-box;
-  color: #000000;
-  background-color: #aa9393a7;
 }
 
 .container-card {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: stretch;
-  gap: 3%;
-}
-
-.container-card p {
-  font-family: "Poppins";
-  font-size: 18px;
-  font-weight: 500;
-}
-
-.card-ob img {
-  width: 30%;
-  height: 30%;
-  object-fit: contain;
-  margin-bottom: 1rem;
+  display: grid;
+  gap: 12px;
 }
 
 .card-ob {
+  width: 100%;
+  min-height: 150px;
+  padding: 16px;
+  border: 1px solid var(--linea);
+  border-radius: 8px;
+  background: var(--panel-suave);
+  color: var(--texto);
   cursor: pointer;
-  transition: all 0.3s ease;
+  text-align: left;
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  column-gap: 14px;
+  align-items: center;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
 }
 
 .card-ob:hover {
-  transform: translateY(-5px);
-  border: 8px solid rgb(53, 105, 189);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+  border-color: var(--verde);
+  background: #eefaf8;
+}
+
+.card-ob img {
+  grid-row: 1 / 3;
+  width: 58px;
+  height: 58px;
+  object-fit: contain;
+}
+
+.card-ob span {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.card-ob small {
+  margin-top: 4px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.card-senas {
+  border-color: rgba(47, 111, 237, 0.24);
+}
+
+@media (max-width: 1120px) {
+  .layout,
+  .contenido-grid,
+  .bienvenida {
+    grid-template-columns: 1fr;
+  }
+
+  .layout {
+    display: block;
+  }
+
+  #header {
+    position: static;
+    height: auto;
+  }
+
+  .bienvenida {
+    display: grid;
+  }
+}
+
+@media (max-width: 760px) {
+  .contenido-principal {
+    padding: 20px;
+  }
+
+  .bienvenida h1 {
+    font-size: 28px;
+  }
+
+  .resumen-paciente {
+    min-width: 0;
+  }
+
+  .card-ob {
+    grid-template-columns: 1fr;
+  }
 }

@@ -1,4 +1,3 @@
-/* ? Ajustes determinado*/
 .centrado {
   display: flex;
   justify-content: center;
@@ -9,23 +8,48 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 html,
 body {
-  height: 100%;
   width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 
 body {
   margin: 0;
-  background: #f4f7f8;
+  width: 100vw;
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
+  overflow: hidden;
+  position: relative;
+  background-color: #f6fafd; 
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(132, 168, 213, 0.25) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(66, 156, 132, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(13, 118, 111, 0.12) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(63, 93, 189, 0.08) 0px, transparent 40%);
 }
 
-/* TODO: logo y escaneo  */
+
+body::before {
+  content: "";
+  position: absolute;
+  top: -20%;
+  right: -10%;
+  width: 60vw;
+  height: 60vw;
+  background: radial-gradient(circle, rgba(66, 156, 132, 0.08) 0%, rgba(255,255,255,0) 70%);
+  z-index: 0; 
+  pointer-events: none;
+}
+
+
+
 .logo {
   width: 30%;
   margin-bottom: 0px;
@@ -36,32 +60,38 @@ body {
   height: 80%;
 }
 
-/* ! CONTENEDORES*/
+
 .mitad {
   width: 50%;
-  height: 100%;
+  height: 100vh;
 }
 
-/* ! CONTENEDOR IZQUIERDA*/
 .container-izquierda {
-  background-image: url(/imagenes/imgLogin/Espalda-Doctora.webp);
+  position: relative;
+  background-image: url("/imagenes/imgLogin/Espalda-Doctora.webp");
   background-size: 100%;
   background-position: center;
   background-repeat: no-repeat;
+  overflow: hidden;
+  z-index: 1; 
 }
 
 .imagen-doctora {
   position: absolute;
-  width: 100%;
-  height: 100%;
+  width: 150%;
+  height: 128%;
   object-fit: contain;
+  object-position: bottom center;
+  bottom: -2%;
   display: block;
 }
 
-/* ! CONTENEDOR DERECHA*/
+
+
 .container-derecha {
   flex-direction: column;
   padding-bottom: 3%;
+  z-index: 1; 
 }
 
 .container-facil {
@@ -79,9 +109,18 @@ body {
   height: 80%;
   border: 5px solid #429c84;
   border-radius: 10px;
+  overflow: hidden;
+  position: relative;
 }
 
-/* todo: TEXTO*/
+.panel-Facil video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+  border-radius: inherit; 
+}
+
+
 .container-derecha > p {
   font-family: "Poppins", sans-serif;
   font-size: 35px;
@@ -107,7 +146,6 @@ span {
   text-align: center;
 }
 
-/* ! BOTONES */
 
 .botones-h {
   display: flex;
@@ -116,6 +154,29 @@ span {
   justify-content: center;
   gap: 10px;
   margin-top: auto;
+}
+
+.boton-doctor {
+  width: 95%;
+  min-height: 46px;
+  border: 2px solid #0d766f;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #0d554f;
+  cursor: pointer;
+  font-family: "Poppins", sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  transition:
+    transform 0.25s ease,
+    background 0.25s ease,
+    color 0.25s ease;
+}
+
+.boton-doctor:hover {
+  transform: translateY(-6px);
+  background: #0d766f;
+  color: #ffffff;
 }
 
 .boton {
@@ -138,8 +199,8 @@ span {
 
 .escaner {
   background:
-    linear-gradient(#60b18b, #60b18b) padding-box,
-    linear-gradient(90deg, #7ee8c6, #5bc0eb, #7ee8c6) border-box;
+    linear-gradient(#005b4f, #156348) padding-box,
+    linear-gradient(90deg, #144334, #252a62, #1b3a30) border-box;
 }
 
 .CrearCuenta {

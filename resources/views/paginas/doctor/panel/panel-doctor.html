@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MediSign - Panel del doctor</title>
+    <link rel="stylesheet" href="panel-doctor.css" />
+    <link rel="icon" href="../../../imagenes/Logo/Logo-grande.webp" type="image/webp" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="doctor-layout">
+      <!-- ==================== MENU LATERAL DEL DOCTOR GAAAAAA ==================== -->
+      <aside class="doctor-menu">
+        <div class="marca-panel">
+          <img src="../../../imagenes/Logo/Logo-grande.webp" alt="MediSign" />
+          <div>
+            <h1>MediSign</h1>
+            <span>Panel medico</span>
+          </div>
+        </div>
+        <nav class="nav-doctor">
+          <a class="activo" href="panel-doctor.html">Panel</a>
+          <a href="../traductor/traductor-senas.html">Traductor de Señas</a>
+          <a href="../../Login/login.html">Cerrar sesion</a>
+        </nav>
+        <div class="menu-ayuda">
+          <strong>Consultorio 204</strong>
+            <span>Calendario, pacientes de Dermatología y acceso rapido a historiales.</span>
+        </div>
+      </aside>
+
+      <!-- ==================== PANEL PRINCIPAL DEL DOCTOR ==================== -->
+      <main class="doctor-contenido">
+        <!-- Cabecera con identidad del doctor -->
+        <header class="cabecera">
+          <div>
+            <h2>Panel principal del doctor</h2>
+            <p>Agenda mensual de Dermatología y pacientes asignados por dia.</p>
+          </div>
+          <div class="doctor-mini">
+            <img src="../../../imagenes/doctores/doctor4.webp" alt="Doctor Carlos" />
+            <div>
+              <strong>Dr. Carlos Rivas</strong>
+              <span>Dermatología</span>
+            </div>
+          </div>
+        </header>
+
+        <!-- Tarjetas de resumen del dia -->
+        <section class="metricas">
+          <article class="metrica">
+            <span>Pacientes hoy</span>
+            <strong data-metrica-hoy>0</strong>
+            <small>turno activo</small>
+          </article>
+          <article class="metrica">
+            <span>Pendientes</span>
+            <strong data-metrica-pendientes>0</strong>
+            <small>por atender</small>
+          </article>
+          <article class="metrica">
+            <span>Pacientes sordomudos</span>
+            <strong data-metrica-sordomudos>0</strong>
+            <small>usar apoyo visual</small>
+          </article>
+          <article class="metrica">
+            <span>Citas confirmadas</span>
+            <strong data-metrica-confirmadas>0</strong>
+            <small>agenda estable</small>
+          </article>
+        </section>
+
+        <!-- Calendario mensual y lista de pacientes del dia seleccionado -->
+        <section class="panel-agenda">
+          <article class="tarjeta">
+            <div class="tarjeta-cabecera">
+              <div>
+                <h3 data-calendario-titulo>Calendario</h3>
+                <p>Seleccione un dia para ver los pacientes asignados.</p>
+              </div>
+              <span class="etiqueta" data-calendario-total>Mes activo</span>
+            </div>
+
+            <div class="calendario-mes">
+              <div class="calendario-controles">
+                <button class="boton boton-secundario" type="button" data-mes-anterior>Anterior</button>
+                <strong data-calendario-periodo>Mayo 2026</strong>
+                <button class="boton boton-secundario" type="button" data-mes-siguiente>Siguiente</button>
+              </div>
+              <div class="calendario-nombres">
+                <span>Lun</span><span>Mar</span><span>Mie</span><span>Jue</span><span>Vie</span><span>Sab</span><span>Dom</span>
+              </div>
+              <div class="calendario-dias" data-calendario-dias></div>
+            </div>
+          </article>
+
+          <aside class="tarjeta">
+            <div class="tarjeta-cabecera">
+              <div>
+                <h3 data-dia-seleccionado>Dia 28 - pacientes asignados</h3>
+                <p>Click en un paciente para abrir su historial y anotaciones.</p>
+              </div>
+            </div>
+            <div class="lista-pacientes" data-lista-pacientes-dia></div>
+          </aside>
+        </section>
+      </main>
+    </div>
+    <script src="panel-doctor.js"></script>
+  </body>
+</html>

@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MediSign - Traductor de Se&ntilde;as</title>
+    <link rel="stylesheet" href="traductor-senas.css" />
+    <link rel="icon" href="../../../imagenes/Logo/Logo-grande.webp" type="image/webp" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="doctor-layout">
+      <!-- ==================== MENU LATERAL DEL DOCTOR ==================== -->
+      <aside class="doctor-menu">
+        <div class="marca-panel">
+          <img src="../../../imagenes/Logo/Logo-grande.webp" alt="MediSign" />
+          <div>
+            <h1>MediSign</h1>
+            <span>Comunicacion inclusiva</span>
+          </div>
+        </div>
+        <nav class="nav-doctor">
+          <a href="../panel/panel-doctor.html">Panel</a>
+          <a class="activo" href="traductor-senas.html">Traductor de Se&ntilde;as</a>
+          <a href="../../Login/login.html">Cerrar sesion</a>
+        </nav>
+        <div class="menu-ayuda">
+          <strong>Consulta asistida</strong>
+          <span>Comunicacion visual y auditiva para pacientes sordomudos.</span>
+        </div>
+      </aside>
+
+      <!-- ==================== TRADUCTOR DOCTOR / PACIENTE ==================== -->
+      <main class="doctor-contenido">
+        <!-- Cabecera del modulo de traduccion -->
+        <header class="cabecera">
+          <div>
+            <h2>Traductor de Se&ntilde;as</h2>
+            <p>Comunicacion bidireccional para consulta dermatologica.</p>
+          </div>
+          <div class="doctor-mini">
+            <img src="../../../imagenes/header-footer/perfil.webp" alt="Paciente" />
+            <div>
+              <strong>Paciente en consulta</strong>
+              <span>Paciente sordomudo</span>
+            </div>
+          </div>
+        </header>
+
+        <!-- Estados principales del flujo de traduccion -->
+        <section class="estado-consulta">
+          <article>
+            <span>Entrada del paciente</span>
+            <strong>Se&ntilde;as a texto y voz</strong>
+          </article>
+          <article>
+            <span>Salida del doctor</span>
+            <strong>Texto a avatar de se&ntilde;as</strong>
+          </article>
+          <article>
+            <span>Modo</span>
+            <strong>Tiempo real simulado</strong>
+          </article>
+        </section>
+
+        <!-- Camara del paciente y panel de comunicacion del doctor -->
+        <section class="traductor-grid">
+          <!-- Paciente: senas a texto y voz -->
+          <article class="tarjeta">
+            <div class="tarjeta-cabecera">
+              <div>
+                <h3>Paciente: se&ntilde;as a texto</h3>
+                <p>La camara enfoca al paciente y el sistema muestra el texto reconocido.</p>
+              </div>
+              <span class="etiqueta">Simulado</span>
+            </div>
+            <div class="camara-simulada">
+              <div class="camara-estado" data-estado-camara>Detectando movimiento de manos...</div>
+            </div>
+            <div class="traduccion">
+              <div class="traduccion-titulo">
+                <h4>Texto reconocido</h4>
+                <button type="button" class="boton-secundario" data-reproducir-voz>Reproducir voz</button>
+              </div>
+              <p data-traduccion>Tengo dolor en el rostro desde hace tres dias.</p>
+            </div>
+          </article>
+
+          <!-- Doctor: texto, frases rapidas y microfono hacia pantalla externa -->
+          <aside class="tarjeta">
+            <div class="tarjeta-cabecera">
+              <div>
+                <h3>Doctor: texto a se&ntilde;as</h3>
+                <p>El doctor escribe o dicta, y el paciente ve el mensaje con avatar en tiempo real.</p>
+              </div>
+            </div>
+            <form class="mensaje-doctor" data-form-doctor>
+              <label for="mensajeDoctor">Mensaje para el paciente</label>
+              <div class="frases frases-doctor">
+                <button type="button" data-frase-doctor="Hola, mucho gusto. Cuenteme como se siente hoy.">Saludo</button>
+                <button type="button" data-frase-doctor="Por favor levante el rostro para revisar la zona afectada.">Levantar rostro</button>
+                <button type="button" data-frase-doctor="Voy a revisar su piel con cuidado. Si siente molestia, aviseme.">Revision</button>
+                <button type="button" data-frase-doctor="Le explicare el tratamiento paso a paso.">Tratamiento</button>
+              </div>
+              <textarea id="mensajeDoctor" data-mensaje-doctor required>Por favor levante el rostro para revisar la zona afectada.</textarea>
+              <div class="acciones-doctor">
+                <button type="button" class="boton-secundario" data-pantalla-paciente>Abrir pantalla del paciente</button>
+                <button type="button" class="boton-secundario" data-microfono data-activo="false">Activar microfono</button>
+                <button type="submit" class="boton-principal">Enviar al paciente</button>
+              </div>
+            </form>
+            <div class="panel-flujo">
+              <h4>Ultimo mensaje enviado</h4>
+              <p data-ultimo-mensaje>Esperando indicacion del doctor.</p>
+            </div>
+          </aside>
+        </section>
+      </main>
+    </div>
+
+    <script src="traductor-senas.js"></script>
+  </body>
+</html>

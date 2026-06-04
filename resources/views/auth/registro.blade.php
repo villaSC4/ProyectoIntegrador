@@ -12,7 +12,7 @@
 <body class="cuerpo-completo">
 
     <section class="diseno-fondo">
-        <img src="{{ asset('imagenes/imgRegistro/DocReg.PNG') }}" alt="Doctora" class="imagen-doctora">
+        <img src="{{ asset('imagenes/imgLogin/Doctora.webp') }}" alt="Doctora" class="imagen-doctora">
     </section>
 
     <main class="container-back">
@@ -28,7 +28,9 @@
                 <div class="form-inputs">
                     <h2>Datos de Registro</h2>
                     
-                    @csrf <div class="field">
+                    @csrf 
+
+                    <div class="field">
                         <label>DNI</label>
                         <input id="dni" type="text" placeholder="7XXXXXXXX" maxlength="8">
                     </div>
@@ -73,4 +75,5 @@
     <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <script src="{{ asset('js/paginas/registro/registro.js') }}"></script>
 </body>
+
 </html>

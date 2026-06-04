@@ -29,5 +29,9 @@
         </div>
     </div>
 
-    @stack('scripts') </body>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+    @stack('scripts')
+</body>
 </html>

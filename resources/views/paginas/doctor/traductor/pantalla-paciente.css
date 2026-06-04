@@ -1,0 +1,203 @@
+:root {
+  /* ==================== VARIABLES DE COLOR DE PANTALLA PACIENTE ==================== */
+  --fondo: #eef7f5;
+  --panel: #ffffff;
+  --texto: #173436;
+  --muted: #64787c;
+  --linea: #d9e8e7;
+  --verde: #0d766f;
+}
+
+* {
+  /* ==================== RESETEO GENERAL ==================== */
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  font-family: "Poppins", Arial, sans-serif;
+  color: var(--texto);
+  background: var(--fondo);
+}
+
+button {
+  font: inherit;
+}
+
+.pantalla {
+  /* ==================== LAYOUT: AVATAR + MENSAJE ==================== */
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(320px, 0.9fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: center;
+  padding: 32px;
+}
+
+.avatar-panel,
+.mensaje-panel {
+  /* ==================== PANELES PRINCIPALES ==================== */
+  min-height: calc(100vh - 64px);
+  border: 1px solid var(--linea);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: 0 18px 40px rgba(24, 62, 68, 0.08);
+}
+
+.avatar-panel {
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.avatar-senas {
+  /* ==================== AVATAR ANIMADO DE SENAS ==================== */
+  position: relative;
+  width: min(420px, 100%);
+  min-height: 560px;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #e9f8f6 0%, #f8fcfc 100%);
+  border: 1px solid var(--linea);
+  overflow: hidden;
+}
+
+.avatar-cabeza,
+.avatar-cuerpo,
+.avatar-brazo {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--verde);
+}
+
+.avatar-cabeza {
+  top: 86px;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: #f0b89a;
+}
+
+.avatar-cuerpo {
+  top: 216px;
+  width: 190px;
+  height: 230px;
+  border-radius: 86px 86px 24px 24px;
+}
+
+.avatar-brazo {
+  top: 234px;
+  width: 42px;
+  height: 190px;
+  border-radius: 999px;
+  transform-origin: top center;
+  animation: senas 1.1s ease-in-out infinite;
+}
+
+.brazo-izquierdo {
+  margin-left: -136px;
+}
+
+.brazo-derecho {
+  margin-left: 136px;
+  animation-delay: 0.28s;
+}
+
+.avatar-senas.detener .avatar-brazo {
+  animation-play-state: paused;
+}
+
+.mensaje-panel {
+  /* ==================== TEXTO GRANDE PARA EL PACIENTE ==================== */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 40px;
+}
+
+.cabecera-paciente {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 32px;
+}
+
+.cabecera-paciente img {
+  width: 62px;
+  height: 62px;
+  object-fit: contain;
+}
+
+.cabecera-paciente span {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.cabecera-paciente strong {
+  display: block;
+  font-size: 18px;
+}
+
+h1 {
+  max-width: 100%;
+  font-size: clamp(12px, 3.5vw, 64px);
+  line-height: 1.12;
+}
+
+p {
+  margin-top: 18px;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.acciones-paciente {
+  /* ==================== BOTONES DE CONTROL DEL AVATAR ==================== */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 30px;
+}
+
+.acciones-paciente button {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--linea);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--texto);
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.acciones-paciente button:hover {
+  border-color: var(--verde);
+  background: #eefaf8;
+}
+
+@keyframes senas {
+  0%,
+  100% {
+    transform: translateX(-50%) rotate(28deg);
+  }
+  50% {
+    transform: translateX(-50%) rotate(-46deg);
+  }
+}
+
+@media (max-width: 920px) {
+  /* ==================== RESPONSIVE PANTALLA PEQUENA ==================== */
+  .pantalla {
+    grid-template-columns: 1fr;
+  }
+
+  .avatar-panel,
+  .mensaje-panel {
+    min-height: auto;
+  }
+}

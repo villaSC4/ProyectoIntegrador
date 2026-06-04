@@ -1,0 +1,451 @@
+:root {
+  /* ==================== VARIABLES DE COLOR DEL TRADUCTOR ==================== */
+  --fondo: #eef7f5;
+  --panel: #ffffff;
+  --panel-suave: #f7fbfb;
+  --texto: #173436;
+  --muted: #64787c;
+  --linea: #d9e8e7;
+  --verde: #0d766f;
+}
+
+* {
+  /* ==================== RESETEO GENERAL ==================== */
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  font-family: "Poppins", Arial, sans-serif;
+  color: var(--texto);
+  background: var(--fondo);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+textarea {
+  font: inherit;
+}
+
+button {
+  border: 0;
+}
+
+.doctor-layout {
+  /* ==================== LAYOUT BASE: MENU + CONTENIDO ==================== */
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+}
+
+.doctor-menu {
+  /* ==================== MENU LATERAL DEL DOCTOR ==================== */
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  background: #073f3d;
+  color: #ffffff;
+}
+
+.marca-panel {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.marca-panel img {
+  width: 58px;
+  height: 58px;
+  object-fit: contain;
+}
+
+.marca-panel h1 {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.marca-panel span,
+.menu-ayuda span {
+  display: block;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 13px;
+}
+
+.nav-doctor {
+  display: grid;
+  gap: 8px;
+}
+
+.nav-doctor a {
+  min-height: 48px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.78);
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+}
+
+.nav-doctor a.activo,
+.nav-doctor a:hover {
+  background: rgba(255, 255, 255, 0.13);
+  color: #ffffff;
+}
+
+.menu-ayuda {
+  margin-top: auto;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.menu-ayuda span {
+  margin-top: 5px;
+  line-height: 1.5;
+}
+
+.doctor-contenido {
+  min-width: 0;
+  padding: 28px;
+}
+
+.cabecera {
+  /* ==================== CABECERA DEL MODULO ==================== */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.cabecera h2 {
+  font-size: 28px;
+}
+
+.cabecera p,
+.tarjeta-cabecera p,
+.traduccion p {
+  color: var(--muted);
+}
+
+.doctor-mini {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--linea);
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.doctor-mini img {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.doctor-mini strong,
+.doctor-mini span {
+  display: block;
+}
+
+.doctor-mini span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.estado-consulta {
+  /* ==================== INDICADORES DEL FLUJO DE TRADUCCION ==================== */
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.estado-consulta article {
+  padding: 16px;
+  border: 1px solid var(--linea);
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.estado-consulta span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.estado-consulta strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 16px;
+}
+
+.traductor-grid {
+  /* ==================== GRID: CAMARA DEL PACIENTE + PANEL DEL DOCTOR ==================== */
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(340px, 0.88fr);
+  gap: 18px;
+}
+
+.tarjeta {
+  padding: 20px;
+  border: 1px solid var(--linea);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: 0 10px 24px rgba(24, 62, 68, 0.06);
+}
+
+.tarjeta-cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.tarjeta-cabecera h3 {
+  font-size: 20px;
+}
+
+.tarjeta-cabecera p {
+  margin-top: 4px;
+  font-size: 13px;
+}
+
+.etiqueta {
+  width: fit-content;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #e8f5f3;
+  color: var(--verde);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.camara-simulada {
+  /* ==================== AREA DE CAMARA / RECONOCIMIENTO DE SENAS ==================== */
+  min-height: 420px;
+  border-radius: 8px;
+  border: 1px solid var(--linea);
+  background:
+    linear-gradient(rgba(7, 63, 61, 0.18), rgba(7, 63, 61, 0.18)),
+    url("../../../imagenes/Inicio/manos.svg") center / 190px no-repeat,
+    #102f33;
+  position: relative;
+  overflow: hidden;
+}
+
+.camara-simulada::before,
+.camara-simulada::after {
+  content: "";
+  position: absolute;
+  inset: 24px;
+  border: 2px solid rgba(255, 255, 255, 0.24);
+  border-radius: 8px;
+}
+
+.camara-simulada::after {
+  inset: 44px;
+  border-color: rgba(119, 232, 212, 0.42);
+  animation: pulsoCamara 2s ease-in-out infinite;
+}
+
+.camara-estado {
+  position: absolute;
+  left: 24px;
+  bottom: 24px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--texto);
+  font-weight: 800;
+}
+
+.traduccion {
+  /* ==================== TEXTO RECONOCIDO DEL PACIENTE ==================== */
+  margin-top: 14px;
+  padding: 16px;
+  border-radius: 8px;
+  background: var(--panel-suave);
+  border: 1px solid var(--linea);
+}
+
+.traduccion-titulo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.traduccion p {
+  line-height: 1.7;
+  font-weight: 600;
+}
+
+.frases {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.frases button {
+  min-height: 42px;
+  border: 1px solid var(--linea);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--texto);
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.frases button:hover,
+.boton-secundario:hover {
+  border-color: #99d3cd;
+  background: #eefaf8;
+}
+
+.boton-secundario,
+.boton-principal {
+  min-height: 42px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.boton-secundario {
+  padding: 0 12px;
+  border: 1px solid var(--linea);
+  background: #ffffff;
+  color: var(--verde);
+}
+
+.boton-principal {
+  background: var(--verde);
+  color: #ffffff;
+}
+
+.mensaje-doctor {
+  /* ==================== ENTRADA DEL DOCTOR HACIA PANTALLA EXTERNA ==================== */
+  display: grid;
+  gap: 10px;
+}
+
+.frases-doctor {
+  margin-top: 0;
+}
+
+.acciones-doctor {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.acciones-doctor .boton-secundario,
+.acciones-doctor .boton-principal {
+  width: 100%;
+}
+
+.acciones-doctor [data-microfono][data-activo="true"] {
+  border-color: var(--verde);
+  background: #e8f5f3;
+  color: #07534e;
+}
+
+.mensaje-doctor label {
+  font-weight: 800;
+}
+
+.mensaje-doctor textarea {
+  width: 100%;
+  min-height: 210px;
+  padding: 12px;
+  border: 1px solid var(--linea);
+  border-radius: 8px;
+  resize: vertical;
+}
+
+.panel-flujo {
+  /* ==================== ULTIMO MENSAJE ENVIADO ==================== */
+  margin-top: 14px;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid var(--linea);
+  background: var(--panel-suave);
+}
+
+.panel-flujo h4 {
+  margin-bottom: 8px;
+}
+
+.panel-flujo p {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+@keyframes pulsoCamara {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+}
+
+@media (max-width: 1120px) {
+  /* ==================== RESPONSIVE TABLET ==================== */
+  .doctor-layout,
+  .traductor-grid,
+  .estado-consulta {
+    grid-template-columns: 1fr;
+  }
+
+  .doctor-menu {
+    position: static;
+    height: auto;
+  }
+
+  .nav-doctor {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  /* ==================== RESPONSIVE MOVIL ==================== */
+  .doctor-contenido {
+    padding: 20px;
+  }
+
+  .cabecera {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .frases {
+    grid-template-columns: 1fr;
+  }
+
+  .acciones-doctor {
+    grid-template-columns: 1fr;
+  }
+
+}

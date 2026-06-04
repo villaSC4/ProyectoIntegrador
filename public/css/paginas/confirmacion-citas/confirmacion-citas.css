@@ -14,8 +14,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    /* Ruta corregida: sale de 'home' y entra a 'imagenes/Cita/' */
-    background-image: url('/imagenes/confirmacion-citas/fondo.webp');
+    background-image: url('/imagenes/confirmacion-citas/confirmacioncitas.jpg');
     background-size: cover;
     background-position: center;
     position: relative;
@@ -35,7 +34,7 @@ body {
 .check-circle {
     width: 80px;
     height: 80px;
-    background-color: #28a745;
+    background-color: #003b32;
     color: white;
     font-size: 45px;
     font-weight: bold;
@@ -47,7 +46,7 @@ body {
 }
 
 .top-section h1 {
-    color: #003b32;
+    color: #106054;
     font-size: 26px;
     font-weight: 700;
     margin-bottom: 10px;
@@ -77,29 +76,26 @@ body {
 }
 
 .status {
-    color: #28a745;
+    color:#106054;
     font-weight: 700;
     margin-bottom: 15px;
 }
 
-/* Estilos de los botones inferiores */
 .bottom-nav {
     position: absolute;
-    bottom: 50px; /* Subimos un poco la posición */
+    bottom: 50px; 
     width: 100%;
     display: flex;
     justify-content: space-between;
-    padding: 0 60px; /* Más margen a los lados */
+    padding: 0 60px; 
 }
 
 .nav-btn {
     background: white;
-    /* Aumentamos el padding: 18px arriba/abajo y 40px a los lados */
     padding: 18px 40px; 
-    border-radius: 50px; /* Bordes más redondeados para botones grandes */
+    border-radius: 50px; 
     text-decoration: none;
     color: #333;
-    /* Aumentamos el tamaño de la fuente */
     font-size: 18px; 
     font-weight: 700;
     box-shadow: 0 8px 20px rgba(0,0,0,0.15);
@@ -110,18 +106,16 @@ body {
     border: 1px solid #eee;
 }
 
-/* Agrandamos el tamaño del icono/emoji dentro del botón */
 .btn-icon {
     font-size: 24px; 
 }
 
 .nav-btn:hover {
     background: #fdfdfd;
-    transform: translateY(-5px); /* Efecto de elevación más marcado */
+    transform: translateY(-5px); 
     box-shadow: 0 12px 25px rgba(0,0,0,0.2);
 }
 
-/* Ajuste para que el botón de salir resalte un poco más si deseas */
 .btn-right {
-    color: #d9534f; /* Color rojizo sutil para el texto de salir */
+    color: #d9534f;
 }

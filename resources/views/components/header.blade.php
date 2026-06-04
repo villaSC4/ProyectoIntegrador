@@ -1,41 +1,47 @@
 <header class="header-sidebar">
     <div class="header-logo">
-        <img src="{{ asset('imagenes/Logo/Logo-grande.webp') }}" alt="Citas Medicas">
+        <img src="{{ asset('imagenes/Logo/Logo-grande.webp') }}" alt="MediSign" />
+
         <div class="header-logo-text">
-            <h2>Citas Medicas</h2>
-            <p>Sistema de Gestion</p>
+            <h2>MediSign</h2>
+            <p>Sistema de gestion</p>
         </div>
     </div>
 
     <nav class="header-menu">
-        <a href="{{ url('/') }}" class="header-link {{ Request::is('/') ? 'header-link-active' : '' }}">
-            <span class="header-icon"><img src="{{ asset('imagenes/header-footer/home.webp') }}" alt=""></span>
+        <a href="{{ url('/home') }}" class="header-link {{ Request::is('home') ? 'header-link-active' : '' }}" data-nav="inicio">
+            <span class="header-icon"><img src="{{ asset('imagenes/header-footer/home.webp') }}" alt="" /></span>
             Inicio
         </a>
 
-        <a href="#" class="header-link">
-            <span class="header-icon"><img src="{{ asset('imagenes/header-footer/agenta.svg') }}" alt=""></span>
+        <a href="{{ route('cita.reserva') }}" class="header-link {{ Request::is('reservar-cita*') ? 'header-link-active' : '' }}" data-nav="citas">
+            <span class="header-icon"><img src="{{ asset('imagenes/header-footer/agenta.svg') }}" alt="" /></span>
             Agendar Cita
         </a>
     </nav>
 
+    <div class="header-ayuda">
+        <strong>Atencion inclusiva</strong>
+        <span>Acceso para pacientes con soporte de lenguaje de señas.</span>
+    </div>
+
     <div class="header-logout">
         @if(Auth::check())
-            <form action="{{ route('logout') }}" method="POST">
+            <form action="{{ route('logout') }}" method="POST" id="logout-form" style="display: none;">
                 @csrf
-                <button type="submit" class="logout-btn" style="background:none; border:none; cursor:pointer; color:inherit; display: flex; align-items: center; gap: 10px;">
-                    <span class="header-logout-icon">
-                        <img src="{{ asset('imagenes/header-footer/cerrar sesion.svg') }}" alt="Cerrar">
-                    </span>
-                    Cerrar Sesión
-                </button>
             </form>
-        @else
-            <a href="{{ route('login') }}" class="logout-btn" style="text-decoration: none; color:inherit; display: flex; align-items: center; gap: 10px;">
+            <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="logout-btn">
                 <span class="header-logout-icon">
-                    <img src="{{ asset('imagenes/header-footer/cerrar sesion.svg') }}" alt="Cerrar">
+                    <img src="{{ asset('imagenes/header-footer/cerrar sesion.svg') }}" alt="Cerrar" />
                 </span>
-                Cerrar Sesión
+                Cerrar sesión
+            </a>
+        @else
+            <a href="{{ route('login') }}" class="logout-btn">
+                <span class="header-logout-icon">
+                    <img src="{{ asset('imagenes/header-footer/cerrar sesion.svg') }}" alt="Cerrar" />
+                </span>
+                Cerrar sesión
             </a>
         @endif
     </div>

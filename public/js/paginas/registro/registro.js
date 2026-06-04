@@ -128,15 +128,17 @@ async function iniciarEscaneoFacial() {
 document.getElementById("btnTerminar").addEventListener("click", function() {
     const dni = dniInput.value.trim();
     const cel = celularInput.value.trim();
+    const nombre = nombreInput.value.trim();
     const rostroOk = document.getElementById('estado-rostro').classList.contains('correcto');
 
-    if (!dni || !cel || !rostroOk || !window.faceDescriptor) {
+    if (!dni || !cel || !nombre || !rostroOk || !window.faceDescriptor) {
         alert("Por favor, completa todos los pasos, incluyendo el escaneo facial.");
         return;
     }
 
     const datos = {
         dni: dni,
+        nombre: nombre,
         celular: cel,
         face_vector: window.faceDescriptor,
         _token: document.querySelector('input[name="_token"]').value 

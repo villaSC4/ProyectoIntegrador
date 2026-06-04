@@ -22,20 +22,27 @@
             
             <div class="details-box">
                 <p class="label">Especialidad</p>
-                <h2 class="specialty-name">Medicina General</h2>
+                <h2 class="specialty-name">{{ $especialidad->nombre ?? 'Especialidad Médica' }}</h2>
+                
+                <p class="label" style="margin-top: 15px; color: #4b5563;">Médico Especialista</p>
+                <h3 style="color: #1f2937; font-size: 19px; font-weight: 700; margin-bottom: 20px; letter-spacing: -0.02em;">
+                    {{ $doctor->nombre }}
+                </h3>
                 
                 <div class="info-grid">
                     <div class="info-item">
                         <span class="icon">📅</span>
                         <div class="text-info">
-                            <p class="bold">Martes, 16</p>
-                            <p class="light">de Abril 2026</p>
+                            <p class="bold">{{ $horario->dia_semana }}</p>
+                            <p class="light">Turno {{ ucfirst($horario->turno) }}</p>
                         </div>
                     </div>
                     <div class="info-item">
                         <span class="icon">🕒</span>
                         <div class="text-info">
-                            <p class="bold">2:00 PM</p>
+                            <p class="bold">
+                                {{ \Carbon\Carbon::parse($horario->hora_inicio)->format('g:i A') }}
+                            </p>
                         </div>
                     </div>
                 </div>

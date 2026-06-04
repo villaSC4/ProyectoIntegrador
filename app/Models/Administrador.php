@@ -2,27 +2,25 @@
 
 namespace App\Models;
 
-use Filament\Models\Contracts\FilamentUser;
-use Filament\Models\Contracts\HasName;
-use Filament\Panel;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 
-class Administrador extends Authenticatable implements FilamentUser, HasName
+class Administrador extends Authenticatable
 {
-    use Notifiable;
+    protected $table = 'administradores';
+    protected $keyType = 'integer';
 
-    protected $table = 'administradores'; 
+    protected $fillable = [
+        'nombre',
+        'email',
+        'password',
+        'remember_token',
+    ];
 
-    protected $fillable = ['nombre', 'email', 'password'];
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
 
-    public function getFilamentName(): string
-    {
-        return $this->nombre ?? $this->email;
-    }
-
-    public function canAccessPanel(Panel $panel): bool
-    {
-        return true; 
-    }
+    const CREATED_AT = 'creado_en';
+    const UPDATED_AT = 'actualizado_en';
 }

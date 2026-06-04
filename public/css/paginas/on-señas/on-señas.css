@@ -1,83 +1,142 @@
+:root {
+  --negro: #000;
+  --gris: #1f1f1f;
+  --blanco: #fff;
+
+  --azul: #4f7ee8;
+
+  --verde-claro: #91d2d2;
+  --verde-borde: #5bbfbd;
+
+  --verde-btn: #005b5b;
+  --verde-btn-border: #003c3c;
+
+  --rojo-btn: #b73b37;
+  --rojo-btn-border: #7d2624;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 .seccion-senas {
   width: 100%;
-  min-height: 100%;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-family: "Poppins", serif;
+  font-family: "Poppins", sans-serif;
 }
+
+.contenido-principal {
+  width: 100%;
+  min-height: 100vh;
+  padding: 2% 8% 5% 8%;
+  background:
+    linear-gradient(rgba(238, 247, 245, 0.60), rgba(238, 247, 245, 0.94)),
+    url("/imagenes/Inicio/fondo.png") center / 1080px repeat;
+}
+
+/* ==========================
+   ENCABEZADO
+========================== */
 
 .encabezado-senas {
   width: 100%;
   text-align: center;
-  margin-bottom: 1%;
+  margin-bottom: 1rem;
 }
 
 .encabezado-senas h1 {
   margin: 0;
-  font-size: 34px;
+  font-size: 40px;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--negro);
 }
 
 .encabezado-senas p {
   margin: 0;
-  font-size: 14px;
+  font-size: 20px;
   font-weight: 500;
-  color: #1f1f1f;
+  color: var(--gris);
 }
+
+/* ==========================
+   CARD GENERAL
+========================== */
 
 .card {
   width: 100%;
-  border: 4px solid #ffffff;
+  border: 4px solid var(--blanco);
   border-radius: 15px;
-  background-color: #ffffff44;
-  box-sizing: border-box;
+  background-color: rgba(255, 255, 255, 0.27);
 }
 
-
-/*TODO: AQUI ESTA LA PARTE DE VIDEOS TUTORIALES*/
+/* ==========================
+   VIDEO TUTORIAL
+========================== */
 .video-card {
-  margin-bottom: 4%;
+  width:100%;
+
+  margin-bottom: 3rem;
   padding: 2.5% 3%;
+
+  border: 4px solid var(--blanco);
+  border-radius: var(--radio-md);
+
+  background-color: var(--fondo-card);
+
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
+
+  gap: 15px;
   text-align: center;
 }
 
 .video-card h4 {
   margin: 0;
-  font-size: 23px;
+  font-family: "Poppins", sans-serif;
+  font-size: 30px;
   font-weight: 800;
-  color: #000000;
+  color: #000;
 }
-
 .video {
-  width: 85%;
+  width: 100%;
   height: 540px;
   border-radius: 15px;
   overflow: hidden;
-  background-color: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .video-tutorial {
-  width: 100%;
-  height: 100%;
+  width: 87%;
+  height: 89%;
   display: block;
-  border: 0;
+  border: 4px solid rgb(139, 128, 128);
+  border-radius: 15px;
   object-fit: cover;
+
+
+
 }
 
 .video-card .desc {
   margin: 0;
-  font-size: 18px;
+  font-family: "Poppins", sans-serif;
+  font-size: 20px;
   font-weight: 600;
-  color: #000000;
+  color: #000;
 }
 
-/*TODO: AQUI ESTA LA PARTE DE RECONOCIMIENTO DE SEÑAS*/
+/* ==========================
+   RECONOCIMIENTO DE SEÑAS
+========================== */
+
 .reconocimiento-card {
   padding: 3%;
   text-align: center;
@@ -87,15 +146,15 @@
   margin: 0;
   font-size: 24px;
   font-weight: 800;
-  color: #000000;
+  color: var(--negro);
 }
 
 .texto-reconocimiento p {
   width: 85%;
-  margin: 0.5% auto 2%;
+  margin: 10px auto 25px;
   font-size: 15px;
   font-weight: 500;
-  color: #1f1f1f;
+  color: var(--gris);
 }
 
 .camara-reconocimiento {
@@ -103,9 +162,10 @@
   min-height: 260px;
   margin: 0 auto;
   padding: 3%;
-  border: 4px solid #5bbfbd;
+  border: 4px solid var(--verde-borde);
   border-radius: 15px;
-  background-color: #91d2d2;
+  background-color: var(--verde-claro);
+
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -114,76 +174,127 @@
 
 .camara-reconocimiento img {
   width: 16%;
-  max-width: 120px;
   min-width: 80px;
-  margin-bottom: 2%;
+  max-width: 120px;
+  margin-bottom: 1rem;
   object-fit: contain;
 }
 
 .camara-reconocimiento p {
   width: 70%;
-  margin: 0 0 2%;
+  margin: 0 0 1rem;
   font-size: 15px;
   font-weight: 500;
-  color: #000000;
+  color: var(--negro);
 }
 
 .camara-reconocimiento span {
-  width: auto;
-  padding: 0.7% 3%;
+  padding: 8px 24px;
   border-radius: 20px;
-  background-color: #4f7ee8;
+  background-color: var(--azul);
   font-size: 13px;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--blanco);
 }
 
-/*TODO: AQUI ESTA LOS BOTNES DE OPCIONES*/
+/* ==========================
+   BOTONES
+========================== */
+
 .acciones-senas {
   width: 100%;
-  margin-top: 2.5%;
+  margin-top: 2rem;
+
   display: flex;
   justify-content: center;
   gap: 5%;
 }
 
 .grupo-accion {
-  width: 32%;
+  width: 45%;
 }
 
 .grupo-accion p {
-  margin: 0 0 2%;
+  margin: 0 0 10px;
   font-size: 13px;
   font-weight: 800;
-  color: #000000;
+  color: var(--negro);
 }
 
 .boton-accion {
   width: 100%;
-  min-height: 58px;
+  min-height: 68px;
+
   border-radius: 18px;
-  font-family: "Poppins", serif;
+  font-family: "Poppins", sans-serif;
   font-size: 16px;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--blanco);
+
   cursor: pointer;
-  transition: all 0.25s ease;
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
 .boton-horario {
-  background-color: #005b5b;
-  border: 3px solid #003c3c;
+  background-color: var(--verde-btn);
+  border: 3px solid var(--verde-btn-border);
 }
 
 .boton-reintentar {
-  background-color: #b73b37;
-  border: 3px solid #7d2624;
+  background-color: var(--rojo-btn);
+  border: 3px solid var(--rojo-btn-border);
 }
 
 .boton-accion:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
 }
+
+.boton-accion:active {
+  transform: translateY(-1px);
+}
+
+#contenedor-ia {
+    position: relative; 
+    overflow: hidden; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center;
+    padding: 25px 0; 
+}
+
+#resultado-sena {
+    margin-top: 15px;
+    margin-bottom: 25px; 
+    padding: 10px 30px;
+    background-color: #5372e7; 
+    color: white; 
+    border-radius: 20px; 
+    white-space: nowrap;
+    font-weight: 600;
+    width: max-content;
+    transition: all 0.3s ease;
+}
+
+/* 3. MARGEN DEL VIDEO */
+#contenedor-ia video {
+    width: 80% !important;
+    max-width: 500px;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    margin-top: 5px; 
+    margin-bottom: 10px;
+}
+
+/* ==========================
+   RESPONSIVE
+========================== */
 
 @media (max-width: 900px) {
   .seccion-senas {
@@ -194,9 +305,12 @@
     font-size: 27px;
   }
 
+  .encabezado-senas p {
+    font-size: 16px;
+  }
+
   .video {
     width: 100%;
-    height: 320px;
   }
 
   .camara-reconocimiento {

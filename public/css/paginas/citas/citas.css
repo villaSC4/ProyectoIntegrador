@@ -1,113 +1,334 @@
-/*! NO MANIPULAR ESTA PARTE ES EL ESTILO DE EL CONTENIDO PRINCIPAL*/
+:root {
+  --negro: #000;
+  --blanco: #fff;
 
-* {
+  --gris-oscuro: #1f1f1f;
+
+  --azul: rgb(64, 64, 146);
+  --azul-hover: #8787d8;
+
+  --verde: #005b5b;
+  --verde-borde: #003c3c;
+
+  --rojo: #b73b37;
+  --rojo-borde: #7d2624;
+
+  --fondo-card: rgba(255, 255, 255, 0.27);
+
+  --radio-sm: 12px;
+  --radio-md: 15px;
+  --radio-lg: 18px;
+  --radio-xl: 20px;
+
+  --sombra: 0 8px 18px rgba(0, 0, 0, 0.22);
+
+  --transicion: 0.25s ease;
+}
+
+
+
+*,
+*::before,
+*::after {
   box-sizing: border-box;
-  width: 100%;
   margin: 0;
   padding: 0;
 }
 
+html,
 body {
-  margin: 0;
+  min-height: 100%;
 }
 
+body {
+  font-family: "Poppins", sans-serif;
+
+}
+
+
 .layout {
-  width: 100%;
-  height: 100vh;
   display: flex;
+  width: 100%;
+  min-height: 100vh;
 }
 
 #header {
-  width: 18%;
-  height: 100%;
   position: fixed;
   top: 0;
   left: 0;
+
+  width: 18%;
+  height: 100%;
 }
 
 #footer {
   width: 100%;
-  height: 14%;
-  position: sticky;
-  top: 0;
   z-index: 900;
 }
 
 .contenido-derecho {
   margin-left: 18%;
   min-height: 100vh;
+
 }
 
 .contenido-principal {
   width: 100%;
   min-height: 100vh;
-  background-color: #50bda0;
-  background-image: url("/imagenes/Inicio/fondo.png");
-  background-repeat: repeat;
-  background-size: 35%; /* usa el tamaño real de la imagen */
-  background-position: 0 0;
   padding: 2% 8% 5% 8%;
+  background:
+    linear-gradient(rgba(238, 247, 245, 0.60), rgba(238, 247, 245, 0.94)),
+    url("/imagenes/Inicio/fondo.png") center / 1080px repeat;
 }
 
-/*TODO: AQUI ESTA LA PARTE DE VIDEOS TUTORIALES*/
-
 .video-card {
-  width: 100%;
-  margin-bottom: 5%;
+  width:100%;
+
+  margin-bottom: 3rem;
   padding: 2.5% 3%;
-  border: 4px solid #ffffff;
-  border-radius: 15px;
-  background-color: #ffffff44;
+
+  border: 4px solid var(--blanco);
+  border-radius: var(--radio-md);
+
+  background-color: var(--fondo-card);
+
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
+
   gap: 15px;
   text-align: center;
-  box-sizing: border-box;
 }
 
 .video-card h4 {
   margin: 0;
-  font-family: "Poppins", serif;
-  font-size: 23px;
+  font-family: "Poppins", sans-serif;
+  font-size: 40px;
   font-weight: 800;
-  color: #000000;
+  color: #000;
 }
-
 .video {
-  width: 85%;
+  width: 100%;
   height: 540px;
   border-radius: 15px;
   overflow: hidden;
-  background-color: #ffffff;
-}
-
-.video .video {
-  width: 100%;
-  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .video-tutorial {
-  width: 100%;
-  height: 100%;
+  width: 87%;
+  height: 89%;
   display: block;
-  border: 0;
+  border: 4px solid rgb(139, 128, 128);
+  border-radius: 15px;
   object-fit: cover;
+
+
+
 }
 
 .video-card .desc {
   margin: 0;
-  font-family: "Poppins", serif;
-  font-size: 18px;
+  font-family: "Poppins", sans-serif;
+  font-size: 20px;
   font-weight: 600;
-  color: #000000;
+  color: #000;
 }
 
+
+.card-padre {
+  width: 100%;
+
+  padding: 2.5% 3%;
+  border : 4px solid var(--blanco);
+  /* border: 4px solid var(--blanco); */
+  border-radius: var(--radio-md);
+
+  background-color: var(--fondo-card);
+
+  display: flex;
+  justify-content: center;
+
+  gap: 15px;
+}
+
+
+.options {
+  width: 100%;
+
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  flex-wrap: wrap;
+
+  gap: 25px;
+}
+
+.doctor {
+  background: white;
+  color: black;
+
+  flex: 1;
+  min-width: 320px;
+  max-width: 350px;
+
+  padding: 20px;
+  border-radius: 20px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.doctor:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--sombra);
+}
+
+.doctor h4 {
+  font-size: 24px;
+  font-family: "Poppins", sans-serif;
+  font-weight: 700;
+  text-align: center;
+  min-height: 50px;
+}
+
+.doctor img {
+  width: 100%;
+  height: 230px;
+
+  margin-bottom: 20px;
+
+  object-fit: cover;
+  object-position: center;
+
+  border: 2px solid var(--negro);
+  border-radius: var(--radio-md);
+}
+
+.doctor-info {
+  display: flex;
+  flex-direction: column;
+
+  gap: 8px;
+
+  text-align: center;
+
+  margin-bottom: 20px;
+}
+
+.doctor p {
+  font-size: 20px;
+  font-weight: 600;
+  font-family: "Poppins", sans-serif;
+}
+
+.doctor span {
+  font-family: "Poppins", sans-serif;
+  color: #000;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.doctor button {
+  width: 100%;
+  padding: 15px;
+
+  font-family: "Poppins", sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+
+  background: rgb(64, 64, 146);
+  color: white;
+
+  border: none;
+  border-radius: 15px;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.3s ease,
+    transform 0.3s ease;
+}
+
+.doctor button:hover {
+  background: var(--azul-hover);
+  transform: scale(1.03);
+}
+
+.doctor button:active {
+  transform: scale(0.98);
+}
+
+
+.acciones-senas {
+  width: 100%;
+
+  margin-top: 2rem;
+
+  display: flex;
+  justify-content: center;
+
+  gap: 5%;
+}
+
+.grupo-accion {
+  width: 32%;
+}
+
+.grupo-accion p {
+  margin-bottom: 10px;
+
+  font-size: 19px;
+  font-weight: 800;
+
+  color: var(--negro);
+}
+
+.boton-accion {
+  width: 100%;
+  min-height: 58px;
+
+  border-radius: 18px;
+
+  font-family: "Poppins", sans-serif;
+  font-size: 19px;
+  font-weight: 800;
+
+  color: #fff;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.boton-horario {
+  background-color: var(--verde);
+  border: 3px solid var(--verde-borde);
+}
+
+.boton-reintentar {
+  background-color: var(--rojo);
+  border: 3px solid var(--rojo-borde);
+}
+
+.boton-accion:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--sombra);
+}
+
+.boton-accion:active {
+  transform: translateY(-1px);
+}
+
+
 @media (max-width: 900px) {
-  .video-card {
-    padding: 4%;
-  }
+
+@media (max-width: 900px) {
 
   .video {
     width: 100%;
@@ -123,163 +344,37 @@ body {
   }
 }
 
-/*TODO: AQUI ESTA LAS TARJETAS DE OPCIONES*/
+  .video-card .desc {
+    font-size: 16px;
+  }
 
-.card-padre {
-  width: 100%;
-  padding: 2.5% 3%;
-  border: 4px solid #ffffff;
-  border-radius: 15px;
-  background-color: #ffffff44;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  gap: 15px;
-  text-align: center;
-  box-sizing: border-box;
+  .acciones-senas {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .grupo-accion {
+    width: 100%;
+  }
 }
 
+@media (max-width: 768px) {
 
-/*! card doctor*/
+  .contenido-principal {
+    padding: 5%;
+  }
 
-.options {
-  width: 100%;
-  display: flex;
-  gap: 25px;
-  justify-content: center;
-  align-items: stretch;
-  flex-wrap: wrap;
-}
+  .doctor {
+    max-width: 100%;
+  }
 
-.doctor {
-  background: white;
-  color: black;
+  .doctor h4 {
+    font-size: 18px;
+  }
 
-  flex: 1;
-  min-width: 30%;
-  max-width: 320px;
-
-  padding: 20px;
-  border-radius: 20px;
-
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-
-  box-sizing: border-box;
-}
-
-.doctor h4 {
-  font-size: 20px;
-  font-family: "Poppins", serif;
-  font-weight: 600;
-  text-align: center;
-  min-height: 8%;
-}
-
-.doctor img {
-  width: 100%;
-  height: 230px;
-
-  object-fit: cover;
-  object-position: center;
-
-  border-radius: 15px;
-  border: 2px solid #000;
-
-  margin-bottom: 20px;
-}
-
-.doctor-info {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.doctor p {
-  font-size: 18px;
-  font-weight: 600;
-  font-family: "Poppins", serif;
-  margin: 0;
-}
-
-.doctor span {
-  font-family: "Poppins";
-  color: #000000;
-  font-size: 18px;
-  font-weight: 500;
-}
-
-.doctor button {
-  width: 100%;
-
-  font-family: "Poppins";
-  font-size: 18px;
-  font-weight: 600;
-
-  background: rgb(64, 64, 146);
-  color: white;
-
-  border: none;
-  border-radius: 12px;
-
-  padding: 14px;
-
-  cursor: pointer;
-  transition: 0.3s ease;
-}
-
-.doctor button:hover {
-  background: #8787d8;
-  transform: scale(1.03);
-}
-
-/*! Botones*/
-.acciones-senas {
-  width: 100%;
-  margin-top: 2.5%;
-  display: flex;
-  justify-content: center;
-  gap: 5%;
-}
-
-.grupo-accion {
-  width: 32%;
-}
-
-.grupo-accion p {
-  margin: 0 0 2%;
-  font-size: 19px;
-  font-weight: 800;
-  color: #000000;
-}
-
-.boton-accion {
-  width: 100%;
-  min-height: 58px;
-  border-radius: 18px;
-  font-family: "Poppins", serif;
-  font-size: 19px;
-  font-weight: 800;
-  color: #ffffff;
-  cursor: pointer;
-  transition: all 0.25s ease;
-}
-
-.boton-horario {
-  background-color: #005b5b;
-  border: 3px solid #003c3c;
-}
-
-.boton-reintentar {
-  background-color: #b73b37;
-  border: 3px solid #7d2624;
-}
-
-.boton-accion:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
+  .doctor p,
+  .doctor span,
+  .doctor button {
+    font-size: 16px;
+  }
 }

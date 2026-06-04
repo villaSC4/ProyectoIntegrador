@@ -2,53 +2,32 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    protected $keyType = 'integer';
 
-    protected $table = 'administradores';
+    protected $fillable = ['dni', 'celular', 'email', 'nombre'];
 
+    const CREATED_AT = 'creado_en';
+    const UPDATED_AT = 'actualizado_en';
 
-    protected $fillable = [
-        'nombre',
-        'dni',
-        'celular',
-        'face_vector',
-        'email',
-        'password',
-    ];
-
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
-
-
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-        'password' => 'hashed',
-        'face_vector' => 'array', 
-    ];
-
-
-    public function setNameAttribute($value): void
+    public function reconocimientoFacial(): MorphOne
     {
-        $this->attributes['nombre'] = $value;
+        return $this->morphOne(ReconocimientoFacial::class, 'biometria');
     }
 
-
-    public function getNameAttribute(): string
+    public function historialClinico(): HasOne
     {
-        return $this->nombre ?? 'Usuario';
+        return $this->hasOne(HistorialClinico::class, 'user_id');
     }
 
-    public function getAuthPassword()
+    public function citas(): HasMany
     {
-        return $this->password;
+        return $this->hasMany(CitaMedica::class, 'user_id');
     }
 }
