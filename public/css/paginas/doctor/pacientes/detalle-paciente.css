@@ -746,6 +746,76 @@ select {
   color: var(--texto);
 }
 
+
+/* Estilos para el lápiz interactivo */
+.btn-lapiz {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0 4px;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+.btn-lapiz:hover {
+    opacity: 1;
+}
+
+/* Manejo de los mini formularios en línea */
+#motivo-visual-bloque {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    width: 100%;
+}
+
+.mini-form-inline {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+}
+.mini-form-inline input {
+    width: 75%;
+    padding: 2px 6px;
+    border: 1px solid #b9cccc;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #173436;
+    text-align: right;
+}
+
+.mini-form-acciones button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 0 2px;
+}
+
+/* Clase global para ocultar elementos */
+.oculto {
+    display: none !important;
+}
+
+.mini-form-inline {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+}
+
+.mini-form-inline input:focus {
+    outline: none;
+    border-color: #173436;
+    box-shadow: 0 0 3px rgba(23, 52, 54, 0.2);
+}
+
+.oculto {
+    display: none !important;
+}
+
 @media (max-width: 1120px) {
   /* ==================== RESPONSIVE TABLET ==================== */
   .doctor-layout,

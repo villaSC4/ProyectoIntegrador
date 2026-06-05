@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthFacialController;
 use App\Http\Controllers\SenaController;
 use App\Models\Doctor;
 use App\Http\Controllers\CitaController;
+use App\Http\Controllers\DoctorController;
 
 /*
 |--------------------------------------------------------------------------
@@ -51,3 +52,19 @@ Route::post('/logout', function () {
 Route::get('/api/consultar-dni/{dni}', [AuthFacialController::class, 'consultarDni']);
 Route::post('/api/finalizar-registro', [AuthFacialController::class, 'finalizarRegistro']);
 Route::post('/api/rostro/login', [AuthFacialController::class, 'loginRostro']);
+
+
+//DOCTOR LOGICA
+Route::prefix('doctor')->group(function () {
+    Route::get('/panel', [DoctorController::class, 'panel'])->name('doctor.panel');
+    Route::get('/api/citas-mes', [DoctorController::class, 'getCitasMes']);
+    Route::post('/api/actualizar-estado-cita', [DoctorController::class, 'actualizarEstadoCita']);
+    Route::get('/pacientes/{id}', [DoctorController::class, 'detallePaciente'])->name('doctor.detalle-paciente');
+    Route::post('/pacientes/guardar-consulta/{citaId}', [DoctorController::class, 'guardarConsulta'])->name('doctor.guardar-consulta');
+    Route::post('/pacientes/guardar-receta/{citaId}', [DoctorController::class, 'guardarReceta'])->name('doctor.guardar-receta');
+    Route::post('/api/actualizar-motivo-cita', [DoctorController::class, 'actualizarMotivoCita']);
+    Route::post('/api/actualizar-diagnostico-cita', [DoctorController::class, 'actualizarDiagnosticoCita']);
+    Route::post('/api/guardar-anotacion-modal', [DoctorController::class, 'guardarAnotacionModal']);
+    Route::post('/api/guardar-receta-medica', [DoctorController::class, 'guardarRecetaMedica']);
+    Route::delete('/api/eliminar-receta-medica/{id}', [DoctorController::class, 'eliminarRecetaMedica']);
+});
