@@ -5,22 +5,27 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\MorphOne;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Filament\Forms\Components\CheckboxList;
 
 class Doctor extends Model
 {
     protected $table = 'doctores';
-    protected $keyType = 'integer';
 
-    protected $fillable = ['nombre', 'especialidad_id', 'cupos_disponibles', 'ruta_imagen', 'esta_activo'];
+    const CREATED_AT = 'creado_en';
+    const UPDATED_AT = 'actualizado_en';
+
+    protected $fillable = [
+        'nombre',
+        'especialidad_id',
+        'cupos_disponibles',
+        'ruta_imagen',
+        'esta_activo'
+    ];
 
     protected $casts = [
         'esta_activo' => 'boolean',
     ];
-
-    const CREATED_AT = 'creado_en';
-    const UPDATED_AT = 'actualizado_en';
 
     public function especialidad(): BelongsTo
     {
@@ -30,16 +35,13 @@ class Doctor extends Model
     public function horarios(): BelongsToMany
     {
         return $this->belongsToMany(Horario::class, 'doctor_horario', 'doctor_id', 'horario_id')
-                    ->withTimestamps();
+                    ->withTimestamps()
+                    ->wherePivot('creado_en', now()) // Si manejas marcas de tiempo personalizadas en el pivote
+                    ->withPivot('id');
     }
 
-    public function reconocimientoFacial(): MorphOne
+    public function reconocimientosFaciales(): MorphMany
     {
-        return $this->morphOne(ReconocimientoFacial::class, 'biometria');
-    }
-
-    public function citas(): HasMany
-    {
-        return $this->hasMany(CitaMedica::class, 'doctor_id');
+        return $this->morphMany(ReconocimientoFacial::class, 'biometria', 'biometria_type', 'biometria_id');
     }
 }

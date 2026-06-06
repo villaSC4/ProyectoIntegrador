@@ -26,15 +26,17 @@
             </div>
             <nav class="nav-doctor">
                 <a class="{{ request()->routeIs('doctor.panel') ? 'activo' : '' }}" href="{{ route('doctor.panel') }}">Panel</a>
-                <a class="{{ request()->routeIs('doctor.traductor') ? 'activo' : '' }}" href="#">Traductor de Señas</a>
+                <a class="{{ request()->routeIs('doctor.traductor-senas') ? 'activo' : '' }}" href="{{ route('doctor.traductor-senas') }}">Traductor de Señas</a>
                 
-                <form action="{{ route('logout') }}" method="POST" style="display: inline;">
-                    @csrf
-                    <button type="submit" style="background: none; border: none; color: inherit; font: inherit; cursor: pointer; width: 100%; text-align: left; padding: 0;">
-                        Cerrar sesión
-                    </button>
-                </form>
+                <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" style="display: block;">
+                    Cerrar sesión
+                </a>
+                
             </nav>
+
+            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                @csrf
+            </form>
             <div class="menu-ayuda">
                 <strong>Consultorio 204</strong>
                 <span>Calendario, pacientes de Dermatología y acceso rápido a historiales.</span>

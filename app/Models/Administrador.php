@@ -2,18 +2,23 @@
 
 namespace App\Models;
 
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasName;
+use Filament\Panel;
+use Illuminate\Database\Eloquent\Casts\Attribute; 
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
-class Administrador extends Authenticatable
+class Administrador extends Authenticatable implements FilamentUser, HasName
 {
+    use Notifiable;
+
     protected $table = 'administradores';
-    protected $keyType = 'integer';
 
     protected $fillable = [
         'nombre',
         'email',
         'password',
-        'remember_token',
     ];
 
     protected $hidden = [
@@ -21,6 +26,24 @@ class Administrador extends Authenticatable
         'remember_token',
     ];
 
-    const CREATED_AT = 'creado_en';
-    const UPDATED_AT = 'actualizado_en';
+    protected $casts = [
+        'password' => 'hashed',
+    ];
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return true;
+    }
+
+    protected function name(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->nombre,
+        );
+    }
+
+    public function getFilamentName(): string
+    {
+        return (string) ($this->nombre ?? 'Administrador');
+    }
 }

@@ -18,4 +18,9 @@ class Horario extends Model
         return $this->belongsToMany(Doctor::class, 'doctor_horario', 'horario_id', 'doctor_id')
                     ->withTimestamps();
     }
+
+    public function getLabelAttribute(): string
+    {
+        return "{$this->dia_semana} | {$this->turno} ({$this->hora_inicio} - {$this->hora_fin})";
+    }
 }

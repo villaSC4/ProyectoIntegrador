@@ -9,6 +9,8 @@ use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\Support\Facades\FilamentView;
+use Illuminate\Support\Facades\Blade;
 use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -27,15 +29,81 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login() 
+            ->authGuard('admin')
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Emerald, 
+                'gray' => Color::Slate,      
             ])
-            // He quitado "/Admin" de las rutas para que encuentre tus CRUDs
+            ->brandLogo(asset('imagenes/Logo/Logo-grande.webp'))
+            ->brandLogoHeight('5rem')
+            ->darkMode(false)
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
-                Pages\Dashboard::class,
             ])
+            ->renderHook(
+                'panels::styles.after', 
+                fn (): string => Blade::render('
+                    <style>
+                        /* Fondo de toda la columna izquierda */
+                        .fi-sidebar, 
+                        .fi-sidebar-header { 
+                            background-color: #0c4a43 !important; 
+                        }
+
+                        /* 🌟 NUEVO: Centramos el logo físicamente en el eje horizontal */
+                        .fi-sidebar-header { 
+                            display: flex !important;
+                            justify-content: center !important;
+                            align-items: center !important;
+                            border-bottom: none !important;
+                            padding-top: 1.5rem !important; /* Espaciado superior premium */
+                            padding-bottom: 0.25rem !important;
+                        }
+
+                        .fi-sidebar-header > a {
+                            display: flex !important;
+                            justify-content: center !important;
+                            width: 100% !important;
+                        }
+
+                        /* Centramos también el texto del subtítulo administrativo */
+                        .medisign-admin-title {
+                            color: #a7f3d0 !important;
+                            font-size: 0.75rem !important;
+                            font-weight: 700 !important;
+                            text-transform: uppercase !important;
+                            letter-spacing: 0.05em !important;
+                            text-align: center !important; /* 🌟 Centrado */
+                            margin-top: 0.25rem !important;
+                            display: block !important;
+                        }
+
+                        /* Mantener estilos de navegación limpios */
+                        .fi-sidebar-nav-label, 
+                        .fi-sidebar-nav-link-label, 
+                        .fi-sidebar-group-label { 
+                            color: #ffffff !important; 
+                        }
+                        .fi-sidebar-nav-link-icon { 
+                            color: #34d399 !important; 
+                        }
+                        .fi-sidebar-nav-link:hover {
+                            background-color: #115e54 !important;
+                        }
+                    </style>
+                '),
+            )
+
+            // El segundo renderHook de 'panels::sidebar.nav.start' lo modificamos ligeramente para quitar el padding izquierdo antiguo:
+            ->renderHook(
+                'panels::sidebar.nav.start', 
+                fn (): string => Blade::render('
+                    <div style="padding: 0 1rem 1rem 1rem;">
+                        <span class="medisign-admin-title">MediSign Administradores</span>
+                    </div>
+                '),
+            )
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,

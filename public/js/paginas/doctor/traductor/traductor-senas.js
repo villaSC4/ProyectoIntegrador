@@ -57,7 +57,7 @@ const abrirPantallaPaciente = () => {
   }
 
   ventanaPaciente = window.open(
-    "pantalla-paciente.html",
+    "/pantalla-paciente",
     "medisignPantallaPaciente",
     "width=980,height=720,resizable=yes,scrollbars=yes"
   );
@@ -73,7 +73,7 @@ const enviarAPantallaPaciente = () => {
   publicarMensajeDoctor(mensaje);
 };
 
-// ==================== SIMULACION DE RECONOCIMIENTO DE SENAS ====================
+// ==================== SIMULACION DE RECONOCIMIENTO DE SEÑAS ====================
 const simularReconocimientoPaciente = () => {
   let indice = 0;
   let texto = "";
@@ -89,7 +89,7 @@ const simularReconocimientoPaciente = () => {
     if (indice >= mensajePacienteSimulado.length) {
       window.clearInterval(intervalo);
       if (estadoCamara) estadoCamara.textContent = "Mensaje reconocido";
-      leerEnVozAlta(texto);
+      readEnVozAlta(texto);
     }
   }, 1200);
 };
@@ -138,7 +138,7 @@ botonMicrofono?.addEventListener("click", () => {
     return;
   }
 
-  publicarMensajeDoctor("Microfono desactivado. El doctor detuvo la comunicacion por voz.");
+  publicarMensajeDoctor("Microfono desactivado. El doctor detuvo la comunication por voz.");
 });
 
 formDoctor?.addEventListener("submit", (event) => {

@@ -4,15 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MediSign - Pantalla del Paciente</title>
-    <link rel="stylesheet" href="pantalla-paciente.css" />
-    <link rel="icon" href="../../../imagenes/Logo/Logo-grande.webp" type="image/webp" />
+    <link rel="stylesheet" href="{{ asset('css/paginas/doctor/traductor/pantalla-paciente.css') }}" />
+    <link rel="icon" href="{{ asset('imagenes/Logo/Logo-grande.webp') }}" type="image/webp" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   </head>
   <body>
     <main class="pantalla">
-      <!-- ==================== AVATAR VISIBLE PARA EL PACIENTE ==================== -->
       <section class="avatar-panel">
         <div class="avatar-senas" data-avatar>
           <div class="avatar-cabeza"></div>
@@ -22,10 +21,9 @@
         </div>
       </section>
 
-      <!-- ==================== MENSAJE DEL DOCTOR PARA EL PACIENTE ==================== -->
       <section class="mensaje-panel">
         <div class="cabecera-paciente">
-          <img src="../../../imagenes/Logo/Logo-grande.webp" alt="MediSign" />
+          <img src="{{ asset('imagenes/Logo/Logo-grande.webp') }}" alt="MediSign" />
           <div>
             <span>Mensaje del doctor</span>
             <strong>Avatar de lenguaje de se&ntilde;as</strong>
@@ -41,6 +39,6 @@
         </div>
       </section>
     </main>
-    <script src="pantalla-paciente.js"></script>
+    <script src="{{ asset('js/paginas/doctor/traductor/pantalla-paciente.js') }}"></script>
   </body>
 </html>
