@@ -11,17 +11,17 @@
         <header class="cabecera">
             <div>
                 <h2>Panel principal del doctor</h2>
-                <p>Agenda mensual de {{ $doctor->especialidad->nombre ?? 'Dermatología' }} y pacientes asignados por día.</p>
+                <p>Agenda mensual de {{ $doctor->especialidad_nombre ?? 'Dermatología' }} y pacientes asignados por día.</p>
             </div>
             <div class="doctor-mini">
                 @if(!empty($doctor->ruta_imagen))
-                    <img src="{{ asset($doctor->ruta_imagen) }}" alt="{{ $doctor->nombre }}" />
+                    <img src="{{ str_starts_with($doctor->ruta_imagen, 'doctores-perfiles/') ? asset('storage/' . $doctor->ruta_imagen) : asset($doctor->ruta_imagen) }}" alt="{{ $doctor->nombre }}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #00bfa6;" />
                 @else
-                    <img src="{{ asset('imagenes/doctores/doctor4.webp') }}" alt="Doctor por defecto" />
+                    <img src="{{ asset('imagenes/doctores/doctor4.webp') }}" alt="Doctor por defecto" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;" />
                 @endif
                 <div>
-                    <strong>{{ $doctor->nombre }}</strong>
-                    <span>{{ $doctor->especialidad->nombre }}</span>
+                    <strong>{{ $doctor->nombre ?? 'Doctor Desconocido' }}</strong>
+                    <span>{{ $doctor->especialidad_nombre ?? 'Dermatología' }}</span>
                 </div>
             </div>
         </header>

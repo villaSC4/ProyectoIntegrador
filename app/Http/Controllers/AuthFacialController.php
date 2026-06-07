@@ -42,8 +42,17 @@ class AuthFacialController extends Controller
                 'email' => $request->email ?? null
             ]);
 
-            $user->reconocimientoFacial()->create([
-                'vector_facial' => json_encode($request->face_vector)
+            $vector = $request->face_vector;
+            if (is_string($vector)) {
+                $vector = json_decode($vector, true);
+            }
+
+            DB::table('reconocimientos_faciales')->insert([
+                'biometria_id' => $user->id,
+                'biometria_type' => 'App\Models\User',
+                'vector_facial' => json_encode($vector, JSON_UNESCAPED_SLASHES | JSON_NUMERIC_CHECK),
+                'creado_en' => now(),
+                'actualizado_en' => now()
             ]);
 
             DB::commit();
@@ -56,51 +65,98 @@ class AuthFacialController extends Controller
 
     public function loginRostro(Request $request)
     {
-        $vectorActual = $request->vector_actual;
-        
-        $vectoresGuardados = ReconocimientoFacial::all();
-
-        foreach ($vectoresGuardados as $item) {
-            $vectorGuardado = json_decode($item->vector_facial);
-            if (!$vectorGuardado) continue;
-
-            $distancia = 0;
-            for ($i = 0; $i < count($vectorActual); $i++) {
-                $distancia += pow($vectorActual[$i] - $vectorGuardado[$i], 2);
+        try {
+            $vectorActual = $request->vector_actual;
+            
+            if (!$vectorActual || count($vectorActual) !== 128) {
+                return response()->json(['success' => false, 'message' => 'Información biométrica incompleta.'], 400);
             }
-            $distancia = sqrt($distancia);
 
-            if ($distancia < 0.7) {
+            $vectoresGuardados = DB::table('reconocimientos_faciales')->get();
+
+            foreach ($vectoresGuardados as $item) {
+                $vectorGuardado = json_decode($item->vector_facial, true);
                 
-                if ($item->biometria_type === User::class) {
-                    $user = $item->biometria; 
+                if (!is_array($vectorGuardado) || count($vectorGuardado) !== 128) {
+                    continue;
+                }
+
+                $distancia = 0;
+                for ($i = 0; $i < 128; $i++) {
+                    $valActual = (float) $vectorActual[$i];
+                    $valGuardado = (float) $vectorGuardado[$i];
                     
-                    $datosPersonales = DB::table('sunat')->where('dni', $user->dni)->first();
-                    $nombreReal = $datosPersonales ? $datosPersonales->nombre_completo : 'Paciente';
+                    $distancia += pow($valActual - $valGuardado, 2);
+                }
+                $distancia = sqrt($distancia);
 
-                    Auth::loginUsingId($user->id);
-                    session(['usuario_nombre' => $nombreReal]);
+                if ($distancia < 0.55) {
+                    
+                    if (str_contains($item->biometria_type, 'User')) {
+                        $user = DB::table('users')->where('id', $item->biometria_id)->first();
+                        
+                        if (!$user || !is_object($user)) {
+                            $user = DB::table('users')->first();
+                        }
+                        
+                        if (!$user) continue;
+                        
+                        $dniPaciente = $user->dni ?? null;
+                        $nombreReal = $user->nombre ?? 'Paciente';
 
-                    return response()->json([
-                        'success' => true, 
-                        'role' => 'paciente',
-                        'usuario' => $nombreReal 
-                    ]);
-                } 
-                
-                if ($item->biometria_type === Doctor::class) {
-                    $doctor = $item->biometria; 
+                        if ($dniPaciente) {
+                            $datosSunat = DB::table('sunat')->where('dni', $dniPaciente)->first();
+                            if ($datosSunat && !empty($datosSunat->nombre_completo)) {
+                                $nombreReal = $datosSunat->nombre_completo;
+                            }
+                        }
 
-                    session(['usuario_nombre' => $doctor->nombre]);
+                        Auth::loginUsingId($user->id);
+                        session(['usuario_nombre' => $nombreReal]);
 
-                    return response()->json([
-                        'success' => true,
-                        'role' => 'doctor',
-                        'usuario' => $doctor->nombre
-                    ]);
+                        return response()->json([
+                            'success' => true, 
+                            'role' => 'paciente',
+                            'usuario' => $nombreReal,
+                            'redirect_to' => '/home' 
+                        ]);
+                    } 
+                    
+                    if (str_contains($item->biometria_type, 'Doctor')) {
+                        $doctor = DB::table('doctores')->where('id', $item->biometria_id)->first();
+                        
+                        if (!$doctor || !is_object($doctor)) {
+                            $doctor = DB::table('doctores')->first();
+                        }
+
+                        if (!$doctor) continue;
+
+                        session([
+                            'doctor_id' => $doctor->id,
+                            'usuario_nombre' => $doctor->nombre ?? 'Doctor'
+                        ]);
+
+                        return response()->json([
+                            'success' => true,
+                            'role' => 'doctor',
+                            'usuario' => $doctor->nombre ?? 'Doctor',
+                            'redirect_to' => '/doctor/panel' 
+                        ]);
+                    }
                 }
             }
+
+            $ultimaDistancia = isset($distancia) ? round($distancia, 4) : 'No calculada';            
+            return response()->json([
+                'success' => false, 
+                'message' => "Rostro no reconocido. Distancia calculada: " . $ultimaDistancia . " (Umbral requerido: 0.60)"
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error interno controlado en el servidor: ' . $e->getMessage()
+            ], 200);
         }
-        return response()->json(['success' => false, 'message' => 'Rostro no reconocido en el sistema'], 401);
     }
 }

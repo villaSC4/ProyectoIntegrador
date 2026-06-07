@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class DoctorController extends Controller
 {
@@ -13,7 +14,11 @@ class DoctorController extends Controller
     public function panel()
     {
         try {
-            $doctorId = 1; 
+            $doctorId = session('doctor_id'); 
+
+            if (!$doctorId) {
+                return redirect()->route('login')->with('error', 'Debes iniciar sesión para acceder al panel.');
+            }
 
             $doctor = DB::table('doctores')
                 ->join('especialidades', 'doctores.especialidad_id', '=', 'especialidades.id')
@@ -23,13 +28,11 @@ class DoctorController extends Controller
 
             if (!$doctor) {
                 $doctor = (object)[
-                    'id' => 1,
-                    'nombre' => 'Doctor Desconocido',
+                    'id' => $doctorId,
+                    'nombre' => session('usuario_nombre') ?? 'Dr. Aaron Palomino',
                     'ruta_imagen' => 'imagenes/doctores/doctor4.webp',
-                    'especialidad' => (object)['nombre' => 'Dermatología']
+                    'especialidad_nombre' => 'Dermatología'
                 ];
-            } else {
-                $doctor->especialidad = (object) ['nombre' => $doctor->especialidad_nombre];
             }
 
             return view('paginas.doctor.panel.panel-doctor', compact('doctor'));
@@ -41,7 +44,7 @@ class DoctorController extends Controller
     public function getCitasMes(Request $request)
     {
         try {
-            $doctorId = 1; 
+            $doctorId = session('doctor_id'); 
             
             $anio = (int) $request->query('anio', now()->year);
             $mes = (int) $request->query('mes', now()->month);
@@ -121,7 +124,7 @@ class DoctorController extends Controller
     public function detallePaciente($userId)
     {
         try {
-            $doctorId = 1; 
+            $doctorId = session('doctor_id'); 
 
             $doctorActivo = DB::table('doctores')
                 ->join('especialidades', 'doctores.especialidad_id', '=', 'especialidades.id')
@@ -272,9 +275,6 @@ class DoctorController extends Controller
         }
     }
 
-    /**
-     * API: Actualiza rápidamente el diagnóstico desde el lápiz central
-     */
     public function actualizarDiagnosticoCita(Request $request)
     {
         try {

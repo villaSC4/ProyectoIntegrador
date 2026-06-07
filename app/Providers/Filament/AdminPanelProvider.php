@@ -45,19 +45,17 @@ class AdminPanelProvider extends PanelProvider
                 'panels::styles.after', 
                 fn (): string => Blade::render('
                     <style>
-                        /* Fondo de toda la columna izquierda */
                         .fi-sidebar, 
                         .fi-sidebar-header { 
                             background-color: #0c4a43 !important; 
                         }
 
-                        /* 🌟 NUEVO: Centramos el logo físicamente en el eje horizontal */
                         .fi-sidebar-header { 
                             display: flex !important;
                             justify-content: center !important;
                             align-items: center !important;
                             border-bottom: none !important;
-                            padding-top: 1.5rem !important; /* Espaciado superior premium */
+                            padding-top: 1.5rem !important; 
                             padding-bottom: 0.25rem !important;
                         }
 
@@ -67,19 +65,17 @@ class AdminPanelProvider extends PanelProvider
                             width: 100% !important;
                         }
 
-                        /* Centramos también el texto del subtítulo administrativo */
                         .medisign-admin-title {
                             color: #a7f3d0 !important;
                             font-size: 0.75rem !important;
                             font-weight: 700 !important;
                             text-transform: uppercase !important;
                             letter-spacing: 0.05em !important;
-                            text-align: center !important; /* 🌟 Centrado */
+                            text-align: center !important; 
                             margin-top: 0.25rem !important;
                             display: block !important;
                         }
 
-                        /* Mantener estilos de navegación limpios */
                         .fi-sidebar-nav-label, 
                         .fi-sidebar-nav-link-label, 
                         .fi-sidebar-group-label { 
@@ -94,8 +90,6 @@ class AdminPanelProvider extends PanelProvider
                     </style>
                 '),
             )
-
-            // El segundo renderHook de 'panels::sidebar.nav.start' lo modificamos ligeramente para quitar el padding izquierdo antiguo:
             ->renderHook(
                 'panels::sidebar.nav.start', 
                 fn (): string => Blade::render('

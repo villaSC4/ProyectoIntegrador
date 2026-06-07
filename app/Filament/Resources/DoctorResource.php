@@ -33,66 +33,71 @@ class DoctorResource extends Resource
     {
         return $form
             ->schema([
-                // 🌟 CAMPOS OCULTOS REQUERIDOS: Livewire los necesita mapeados para que 
-                // el comando JavaScript `@this.set('data.campo', valor)` pueda sincronizarse.
-                TextInput::make('nombre')
-                    ->required()
-                    ->hidden(),
-
-                // 🌟 CAMPOS VISIBLES PROPIOS DEL DOCTOR: Se mostrarán arriba de la cámara
-                Forms\Components\Card::make()->schema([
-                Forms\Components\Select::make('especialidad_id')
-                    ->label('Especialidad Médica')
-                    ->relationship('especialidad', 'nombre')
-                    ->searchable()
-                    ->preload()
+                Forms\Components\Hidden::make('nombre')
                     ->required(),
 
-                Forms\Components\TextInput::make('cupos_disponibles')
-                    ->label('Cupos de Citas Disponibles')
-                    ->numeric()
-                    ->default(0)
-                    ->minValue(0),
+                Forms\Components\Hidden::make('dni'),
+                Forms\Components\Hidden::make('celular'),
 
-                Forms\Components\Toggle::make('esta_activo')
-                    ->label('Médico Disponible para Consultas')
-                    ->default(true),
+                Forms\Components\Card::make()->schema([
+                    Forms\Components\Select::make('especialidad_id')
+                        ->label('Especialidad Médica')
+                        ->relationship('especialidad', 'nombre')
+                        ->searchable()
+                        ->preload()
+                        ->required(),
 
-                // 🌟 Agrupamos el FileUpload correctamente dentro del mismo esquema
-                Forms\Components\Group::make([
+                    Forms\Components\TextInput::make('cupos_disponibles')
+                        ->label('Cupos de Citas Disponibles')
+                        ->numeric()
+                        ->default(0)
+                        ->minValue(0),
+
+                    Forms\Components\Toggle::make('esta_activo')
+                        ->label('Médico Disponible para Consultas')
+                        ->default(true),
+
                     Forms\Components\FileUpload::make('ruta_imagen')
                         ->label('Fotografía de Perfil Profesional')
                         ->image()
                         ->avatar() 
                         ->directory('doctores-perfiles')
-                        ->visibility('public'),
-                ])
-                ->columnSpanFull()
-                ->extraAttributes([
-                    'class' => 'flex flex-col items-center justify-center text-center w-full pt-4'
-                ]), // <-- Aquí cierra el Group
-                
-            ])->columns(3),
+                        ->disk('public')
+                        ->visibility('public')
+                        ->columnSpanFull()
+                        ->extraAttributes([
+                            'class' => 'mx-auto flex flex-col items-center justify-center text-center pt-4'
+                        ])
+                        ->formatStateUsing(function ($state) {
+                            if (!$state) return null;
+                            
+                            if (is_string($state)) {
+                                if (str_contains($state, 'imagenes/doctores/')) {
+                                    $archivoLimpio = str_replace('imagenes/doctores/', '', $state);
+                                    return [$archivoLimpio => $archivoLimpio];
+                                }
+                                return [$state => $state];
+                            }
+                            return $state;
+                        }),
+                ])->columns(3),
 
                 Forms\Components\Card::make()->schema([
                     Forms\Components\CheckboxList::make('horarios')
                         ->label('Asignar Horarios de Atención')
                         ->relationship('horarios', 'id') 
-                        
                         ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->dia_semana} | {$record->turno} ({$record->hora_inicio} - {$record->hora_fin})")
-                        
                         ->columns(2) 
                         ->bulkToggleable() 
                         ->required(),
                 ])->label('Horarios del Médico'),
 
-                // Campo oculto para capturar el array de 128 flotantes de la IA
                 Forms\Components\Hidden::make('face_vector'),
 
-                // 🌟 TU VISTA BLADE CON LA CÁMARA Y VALIDACIÓN DE DNI/CELULAR NATIVA
                 ViewField::make('formulario_biometrico_completo')
                     ->view('filament.components.camara-escaneo')
-                    ->columnSpanFull(),
+                    ->columnSpanFull()
+                    ->hiddenOn('edit'),
             ]);
     }
 

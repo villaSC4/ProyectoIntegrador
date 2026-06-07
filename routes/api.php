@@ -18,7 +18,6 @@ Route::get('/validar-gesto', function () {
 
 
 Route::post('/rostro/registrar', function (Request $request) {
-    // 1. Validamos que el vector esté presente
     if (!$request->has('vector')) {
         return response()->json(['error' => 'No se recibió el vector facial'], 400);
     }
@@ -29,8 +28,6 @@ Route::post('/rostro/registrar', function (Request $request) {
         return response()->json(['error' => 'Usuario no encontrado'], 404);
     }
 
-    // 2. Guardamos el vector
-    // IMPORTANTE: Asegúrate de que face_vector esté en el $fillable del modelo User
     $user->face_vector = json_encode($request->vector);
     $user->save();
 
@@ -45,13 +42,12 @@ Route::post('/rostro/login', function (Request $request) {
     }
 
     $usuarios = User::whereNotNull('face_vector')->get();
-    $distanciaMasCercana = 999; // Para debug
+    $distanciaMasCercana = 999; 
 
     foreach ($usuarios as $user) {
         $vectorGuardado = json_decode($user->face_vector);
         
         $distancia = 0;
-        // Calculamos la Distancia Euclidiana
         for ($i = 0; $i < count($vectorActual); $i++) {
             $distancia += pow($vectorActual[$i] - $vectorGuardado[$i], 2);
         }
@@ -59,7 +55,6 @@ Route::post('/rostro/login', function (Request $request) {
         
         if ($distancia < $distanciaMasCercana) $distanciaMasCercana = $distancia;
 
-        // Umbral de 0.6 (Si es menor, es la misma persona)
         if ($distancia < 0.6) {
             return response()->json([
                 'mensaje' => 'Acceso Concedido',

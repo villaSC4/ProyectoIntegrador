@@ -11,7 +11,6 @@ const estadoRostro = document.getElementById('estado-rostro');
 const contenedor = document.getElementById('contenedor-video');
 const placeholder = document.getElementById('placeholder-face');
 
-// Variables de control locales protegidas (sin contaminar el objeto window)
 let modelsLoaded = false;
 let camaraStream = null;
 let detectorInterval = null;
@@ -24,7 +23,6 @@ function marcarEstado(elemento, estado) {
     if (estado === "error") elemento.classList.add("error");
 }
 
-// --- CONSULTA API: DNI PERUANO ---
 dniInput.addEventListener("input", function () {
     const valorDni = dniInput.value.trim();
 
@@ -58,7 +56,6 @@ dniInput.addEventListener("input", function () {
     }
 });
 
-// --- VALIDACIÓN: CELULAR ---
 celularInput.addEventListener("input", function () {
     const valorCelular = celularInput.value.trim();
     const celularValido = /^(\+51\s?)?9\d{8}$/.test(valorCelular);
@@ -76,7 +73,6 @@ celularInput.addEventListener("input", function () {
     }
 });
 
-// --- CARGA ASÍNCRONA DE MODELOS ---
 async function loadModels() {
     try {
         const MODEL_URL = 'https://raw.githubusercontent.com/vladmandic/face-api/master/model/';
@@ -86,7 +82,6 @@ async function loadModels() {
         modelsLoaded = true;
         console.log("=== MediSign IA: Modelos de Registro listos ===");
         
-        // Verificamos por si el médico terminó de llenar los inputs antes de que carguen los modelos
         verificarRequisitosParaIA();
     } catch (error) {
         console.error("Error al descargar modelos Face-API:", error);
@@ -104,9 +99,7 @@ function verificarRequisitosParaIA() {
     }
 }
 
-// --- ESCANEO BIOMÉTRICO FIABLE ---
 async function iniciarEscaneoFacial() {
-    // Si la etiqueta video ya existe corriendo, evitamos duplicar flujos de hardware
     if (document.getElementById('video-registro')) return;
 
     try {
@@ -131,9 +124,8 @@ async function iniciarEscaneoFacial() {
             let capturando = false;
 
             detectorInterval = setInterval(async () => {
-                if (capturando) return; // Rompe la ejecución asíncrona redundante si ya hubo match
+                if (capturando) return;  
 
-                // Optimizamos resolución de captura a 416 para mejorar el reconocimiento de facciones
                 const opcionesTiny = new faceapi.TinyFaceDetectorOptions({
                     inputSize: 416,
                     scoreThreshold: 0.5
@@ -144,18 +136,16 @@ async function iniciarEscaneoFacial() {
                     .withFaceDescriptor();
 
                 if (detection) {
-                    capturando = true; // Frenamos en seco ingresos paralelos
+                    capturando = true; 
                     
-                    // 🌟 PROTECCIÓN: Detener de inmediato el interval y congelar video
                     clearInterval(detectorInterval);
                     detectorInterval = null;
                     video.pause();
 
                     marcarEstado(estadoRostro, "correcto");
-                    descriptorRegistrado = Array.from(detection.descriptor); // Asignación segura local
+                    descriptorRegistrado = Array.from(detection.descriptor);
                     console.log("¡Rostro validado con éxito!");
                     
-                    // Apagamos los lentes físicos de la cámara
                     apagarHardwareCamara();
                 }
             }, 800);
@@ -165,7 +155,6 @@ async function iniciarEscaneoFacial() {
     }
 }
 
-// --- FINALIZAR REGISTRO (ENVÍO COMPACTO A LARAVEL) ---
 document.getElementById("btnTerminar").addEventListener("click", function() {
     const dni = dniInput.value.trim();
     const cel = celularInput.value.trim();
@@ -177,7 +166,6 @@ document.getElementById("btnTerminar").addEventListener("click", function() {
         return;
     }
 
-    // Buscamos el token CSRF de forma segura tanto en input hidden como en meta-tag
     const csrfToken = document.querySelector('input[name="_token"]')?.value || 
                       document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
@@ -190,7 +178,7 @@ document.getElementById("btnTerminar").addEventListener("click", function() {
         dni: dni,
         nombre: nombre,
         celular: cel,
-        face_vector: descriptorRegistrado, // Enviamos el array plano de 128 flotantes
+        face_vector: descriptorRegistrado, 
         _token: csrfToken 
     };
 
@@ -209,7 +197,7 @@ document.getElementById("btnTerminar").addEventListener("click", function() {
             window.location.href = "/"; 
         } else {
             alert("Error al registrar en MediSign: " + data.message);
-            location.reload(); // Reseteamos estados ante fallos de inserción de base de datos
+            location.reload(); 
         }
     })
     .catch(err => {

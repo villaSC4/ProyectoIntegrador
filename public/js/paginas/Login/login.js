@@ -1,21 +1,13 @@
-// =========================================================================
-// 👤 ELEMENTOS DEL DOM (EXCLUSIVOS DE LA PANTALLA DE LOGIN)
-// =========================================================================
 const btnEscanear = document.getElementById('btnEscanear');
 const contenedor = document.getElementById('contenedor-video-login');
 const placeholder = document.getElementById('placeholder-login');
 
-// Variables de control locales protegidas
 let modelosListos = false;
 let camaraStream = null;
 let detectorInterval = null;
 
-// Bloquear el botón estéticamente hasta que los modelos terminen de descargar
 if (btnEscanear) btnEscanear.disabled = true;
 
-// =========================================================================
-// 🧠 1. CARGA ASÍNCRONA DE MODELOS (AL CARGAR LA PÁGINA)
-// =========================================================================
 async function cargarModelos() {
     try {
         const MODEL_URL = 'https://raw.githubusercontent.com/vladmandic/face-api/master/model/';
@@ -34,9 +26,6 @@ async function cargarModelos() {
 }
 cargarModelos();
 
-// =========================================================================
-// ⚡ 2. EVENTO CLIC: ENCENDER CÁMARA Y ESCANEAR
-// =========================================================================
 if (btnEscanear) {
     btnEscanear.addEventListener('click', async () => {
         if (!modelosListos) {
@@ -44,7 +33,6 @@ if (btnEscanear) {
             return;
         }
 
-        // Si ya hubiera un flujo corriendo por error, lo limpiamos antes de empezar
         limpiarFlujoCamara();
 
         try {
@@ -58,11 +46,10 @@ if (btnEscanear) {
 
             if (placeholder) placeholder.style.display = 'none';
             if (contenedor) {
-                contenedor.innerHTML = ""; // Limpieza segura de iconos previos
+                contenedor.innerHTML = ""; 
                 contenedor.appendChild(video);
             }
 
-            // Encendemos la webcam físicamente
             camaraStream = await navigator.mediaDevices.getUserMedia({ 
                 video: { width: 640, height: 480 } 
             });
@@ -85,10 +72,8 @@ if (btnEscanear) {
                         .withFaceDescriptor();
 
                     if (detection && !capturando) {
-                        // 🌟 1. Bloqueamos el paso inmediatamente de forma síncrona
                         capturando = true;
                         
-                        // 🌟 2. Matamos el intervalo en el acto para que no existan ciclos fantasmas
                         clearInterval(detectorInterval);
                         detectorInterval = null;
                         
@@ -96,10 +81,8 @@ if (btnEscanear) {
 
                         const descriptorActual = Array.from(detection.descriptor);
                         
-                        // 🌟 3. Apagamos los lentes de la cámara de inmediato
                         apagarHardwareCamara();
                         
-                        // 🌟 4. Recién enviamos los datos cuando el entorno JS está en completo silencio
                         verificarIdentidad(descriptorActual);
                     }
                 }, 800);
@@ -112,9 +95,6 @@ if (btnEscanear) {
     });
 }
 
-// =========================================================================
-// 🚀 3. COMUNICACIÓN ASÍNCRONA CON TU CONTROLADOR LARAVEL
-// =========================================================================
 function verificarIdentidad(descriptor) {
     const metaToken = document.querySelector('meta[name="csrf-token"]');
     if (!metaToken) {
@@ -140,10 +120,10 @@ function verificarIdentidad(descriptor) {
     })
     .then(data => {
         if (data.success) {
-            alert("¡Bienvenido, " + data.usuario + "!");
-            window.location.href = "/home";
+            console.log("=== Autenticación Exitosa ===");
+            window.location.href = data.redirect_to;
         } else {
-            alert("Rostro no reconocido en el sistema.");
+            alert(data.message || "Rostro no reconocido en el sistema.");
             if (placeholder) placeholder.style.display = 'block';
             const videoLogin = document.getElementById('video-login');
             if (videoLogin) videoLogin.remove();
@@ -151,7 +131,7 @@ function verificarIdentidad(descriptor) {
     })
     .catch(err => {
         console.error("Error crítico detectado:", err);
-        alert("Error 419: La sesión de seguridad de Laravel expiró. Por favor, refresca la página manualmente.");
+        alert("Hubo un problema al procesar la autenticación facial. Inténtalo de nuevo.");
     });
 }
 

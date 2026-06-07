@@ -15,6 +15,9 @@ class Administrador extends Authenticatable implements FilamentUser, HasName
 
     protected $table = 'administradores';
 
+    const CREATED_AT = 'creado_en';
+    const UPDATED_AT = 'actualizado_en';
+
     protected $fillable = [
         'nombre',
         'email',

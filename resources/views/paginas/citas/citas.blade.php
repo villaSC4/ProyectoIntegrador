@@ -25,12 +25,22 @@
 
     <div class="card-padre options">
         @forelse($doctores as $doctor)
-            <div class="doctor card-doctor-clicable" data-id="{{ $doctor->id }}" data-nombre="{{ $doctor->nombre }}" data-imagen="{{ $doctor->ruta_imagen ? asset($doctor->ruta_imagen) : asset('imagenes/doctores/doctor4.webp') }}" data-horarios="{{ json_encode($doctor->horarios) }}" style="cursor: pointer;">
-                
+            <div class="doctor card-doctor-clicable" 
+                data-id="{{ $doctor->id }}" 
+                data-nombre="{{ $doctor->nombre }}" 
+                data-imagen="{{ $doctor->ruta_imagen ? (str_starts_with($doctor->ruta_imagen, 'doctores-perfiles/') ? asset('storage/' . $doctor->ruta_imagen) : (str_starts_with($doctor->ruta_imagen, 'imagenes/') ? asset($doctor->ruta_imagen) : asset('imagenes/doctores/' . $doctor->ruta_imagen))) : asset('imagenes/doctores/doctor4.webp') }}" 
+                data-horarios="{{ json_encode($doctor->horarios) }}" 
+                style="cursor: pointer;">
                 <h4>{{ $doctor->nombre }}</h4>
                 
                 @if($doctor->ruta_imagen)
-                    <img src="{{ asset($doctor->ruta_imagen) }}" alt="{{ $doctor->nombre }}">
+                    @if(str_starts_with($doctor->ruta_imagen, 'doctores-perfiles/'))
+                        <img src="{{ asset('storage/' . $doctor->ruta_imagen) }}" alt="{{ $doctor->nombre }}">
+                    @elseif(str_starts_with($doctor->ruta_imagen, 'imagenes/'))
+                        <img src="{{ asset($doctor->ruta_imagen) }}" alt="{{ $doctor->nombre }}">
+                    @else
+                        <img src="{{ asset('imagenes/doctores/' . $doctor->ruta_imagen) }}" alt="{{ $doctor->nombre }}">
+                    @endif
                 @else
                     <img src="{{ asset('imagenes/doctores/doctor4.webp') }}" alt="Doctor por defecto">
                 @endif

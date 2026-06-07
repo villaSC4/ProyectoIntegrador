@@ -32,12 +32,10 @@ class Doctor extends Model
         return $this->belongsTo(Especialidad::class, 'especialidad_id');
     }
 
-    public function horarios(): BelongsToMany
+     public function horarios(): BelongsToMany
     {
         return $this->belongsToMany(Horario::class, 'doctor_horario', 'doctor_id', 'horario_id')
-                    ->withTimestamps()
-                    ->wherePivot('creado_en', now()) // Si manejas marcas de tiempo personalizadas en el pivote
-                    ->withPivot('id');
+                    ->withTimestamps();
     }
 
     public function reconocimientosFaciales(): MorphMany
