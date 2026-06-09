@@ -247,6 +247,8 @@ document.addEventListener("DOMContentLoaded", function () {
           const diagnostico = filaActiva.dataset.diagnostico || "Pendiente de evaluación.";
           const tratamiento = filaActiva.dataset.tratamiento || "No asignado.";
           const observaciones = filaActiva.dataset.observaciones || "Sin observaciones adicionales.";
+          const especialidadDoctor = document.querySelector(".perfil-paciente .datos div:nth-child(4) strong")?.textContent || "Medicina General";
+          const nombreDoctor = document.querySelector("#ver-doctor")?.textContent || "Dr. Mendoza";
           
           const nombrePaciente = document.querySelector("header.cabecera h2")?.textContent.replace("Paciente: ", "") || "Paciente";
 
@@ -315,9 +317,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
                   <div class="firma-medico">
                       <div class="firma-contenedor">
-                          <strong>Dr. Carlos Mendoza Ruiz</strong><br>
+                          <strong>${nombreDoctor}</strong><br>
                           Firma y Sello del Especialista<br>
-                          C.M.P. Dermatología
+                          C.M.P. ${especialidadDoctor}
                       </div>
                   </div>
               </body>
@@ -827,4 +829,70 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
+
+    const btnEditarBmi = document.getElementById("btn-editar-bmi");
+const btnCancelarBmi = document.getElementById("btn-cancelar-bmi");
+const btnGuardarBmi = document.getElementById("btn-guardar-bmi");
+const bloqueVisualBmi = document.getElementById("bmi-visual-bloque");
+const formEditarBmi = document.getElementById("form-editar-bmi");
+const inputBmi = document.getElementById("input-bmi");
+const textoBmi = document.getElementById("texto-bmi");
+
+if (btnEditarBmi) {
+    btnEditarBmi.addEventListener("click", () => {
+        bloqueVisualBmi.classList.add("oculto");
+        formEditarBmi.classList.remove("oculto");
+        inputBmi.focus();
+    });
+}
+
+if (btnCancelarBmi) {
+    btnCancelarBmi.addEventListener("click", () => {
+        formEditarBmi.classList.add("oculto");
+        bloqueVisualBmi.classList.remove("oculto");
+        inputBmi.value = textoBmi.textContent.trim() === "-------" ? "" : textoBmi.textContent.trim();
+    });
+}
+
+if (btnGuardarBmi) {
+    btnGuardarBmi.addEventListener("click", async () => {
+        const nuevoBmi = inputBmi.value.trim();
+        
+        // Extrae el ID del paciente de forma segura desde la URL (/doctor/pacientes/XX)
+        const match = window.location.pathname.match(/\/pacientes\/(\d+)/);
+        const userId = match ? match[1] : null;
+
+        if (!nuevoBmi) {
+            alert("Por favor, ingrese un valor de BMI valido.");
+            return;
+        }
+
+        if (!userId) {
+            alert("No se pudo recuperar el ID del paciente.");
+            return;
+        }
+
+        try {
+            const response = await fetch(`/doctor/api/actualizar-bmi-paciente`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ user_id: userId, bmi: nuevoBmi })
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                textoBmi.textContent = nuevoBmi;
+                formEditarBmi.classList.add("oculto");
+                bloqueVisualBmi.classList.remove("oculto");
+            } else {
+                alert("Error en base de datos: " + data.message);
+            }
+        } catch (error) {
+            console.error("Error en la peticion asincrona de BMI:", error);
+        }
+    });
+}
 }); 

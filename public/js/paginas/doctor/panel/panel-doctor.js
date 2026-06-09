@@ -102,7 +102,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     </a>
                     <span>DNI: ${cita.paciente_dni || '-------'}</span>
                     <span>Tipo: ${cita.es_sordomudo ? 'Paciente sordomudo' : 'Paciente regular'}</span>
-                    <span>Área: Dermatología</span>
+                    <span>Área: ${cita.especialidad_nombre || 'Medicina General'}</span>
                     <small>Motivo: ${cita.motivo_consulta || 'Sin especificar'}</small>
                 </div>
                 <div class="estado-atencion">

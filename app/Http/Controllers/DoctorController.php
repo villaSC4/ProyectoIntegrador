@@ -51,6 +51,8 @@ class DoctorController extends Controller
 
             $citas = DB::table('citas_medicas')
                 ->join('users', 'citas_medicas.user_id', '=', 'users.id')
+                ->join('doctores', 'citas_medicas.doctor_id', '=', 'doctores.id')
+                ->join('especialidades', 'doctores.especialidad_id', '=', 'especialidades.id')
                 ->leftJoin('reconocimientos_faciales', function($join) {
                     $join->on('users.id', '=', 'reconocimientos_faciales.biometria_id')
                          ->where('reconocimientos_faciales.biometria_type', '=', 'App\Models\User');
@@ -65,6 +67,7 @@ class DoctorController extends Controller
                     'citas_medicas.motivo_consulta',
                     'users.nombre as paciente_nombre', 
                     'users.dni as paciente_dni',
+                    'especialidades.nombre as especialidad_nombre',
                     DB::raw('CASE WHEN reconocimientos_faciales.id IS NOT NULL THEN 1 ELSE 0 END as es_sordomudo')
                 )
                 ->where('citas_medicas.doctor_id', $doctorId)
@@ -145,7 +148,6 @@ class DoctorController extends Controller
             $datosSunat = DB::table('sunat')->where('dni', $paciente->dni)->first();
             
             $edadCalculada = '-------';
-            
             if ($datosSunat && !empty($datosSunat->fecha_nacimiento)) {
                 $edadCalculada = Carbon::parse($datosSunat->fecha_nacimiento)->age; 
             } else {
@@ -160,12 +162,25 @@ class DoctorController extends Controller
                 ->orderBy('fecha_cita', 'desc')
                 ->first();
 
+            if (!$citaActual) {
+                $citaActual = (object)[
+                    'id' => 0,
+                    'titulo' => 'Sin cita activa',
+                    'fecha_cita' => now()->toDateString(),
+                    'estado' => 'Pendiente',
+                    'motivo_consulta' => 'Reserva web automatica',
+                    'diagnostico' => 'Reserva web automatica. Pendiente de evaluacion clinica.',
+                    'sintomas' => 'No registrados aun.',
+                    'tratamiento' => 'Pendiente de asignacion.',
+                    'observaciones_adicionales' => 'Sin observaciones.'
+                ];
+            }
+
             $historicoCitas = DB::table('citas_medicas')
                 ->where('user_id', $userId)
                 ->where('estado', 'Atendido')
                 ->orderBy('fecha_cita', 'desc')
                 ->get();
-
             
             $todasLasCitas = DB::table('citas_medicas')
                 ->where('user_id', $userId)
@@ -173,9 +188,7 @@ class DoctorController extends Controller
                 ->orderBy('fecha_cita', 'desc')
                 ->get();
 
-            $recetaActual = $citaActual 
-                ? DB::table('recetas_medicas')->where('cita_medica_id', $citaActual->id)->first() 
-                : null;
+            $recetaActual = DB::table('recetas_medicas')->where('cita_medica_id', $citaActual->id)->first();
 
             if ($recetaActual) {
                 $recetaActual->medicamentos = DB::table('receta_medicamentos')
@@ -185,10 +198,43 @@ class DoctorController extends Controller
                 $recetaActual = null;
             }
 
-            return view('paginas.doctor.pacientes.detalle-paciente', compact('paciente', 'historial', 'citaActual', 'historicoCitas', 'recetaActual', 'edadCalculada', 'todasLasCitas','doctorActivo'));
+            return view('paginas.doctor.pacientes.detalle-paciente', compact('paciente', 'historial', 'citaActual', 'historicoCitas', 'recetaActual', 'edadCalculada', 'todasLasCitas', 'doctorActivo'));
 
         } catch (\Exception $e) {
             return "Error al procesar los datos de identidad: " . $e->getMessage();
+        }
+    }
+
+    public function actualizarBmiPaciente(Request $request)
+    {
+        try {
+            $userId = $request->input('user_id');
+            $nuevoBmi = $request->input('bmi');
+
+            if (!$userId) {
+                return response()->json(['success' => false, 'message' => 'ID de paciente no recibido.'], 400);
+            }
+
+            $pacienteBiometria = DB::table('reconocimientos_faciales')
+                ->where('biometria_id', $userId)
+                ->where('biometria_type', 'App\Models\User')
+                ->first();
+
+            $tipoPaciente = $pacienteBiometria ? 'Sordomudo' : 'Regular';
+
+            DB::table('historiales_clinicos')
+                ->updateOrInsert(
+                    ['user_id' => $userId], 
+                    [
+                        'bmi' => $nuevoBmi,
+                        'tipo_paciente' => $tipoPaciente, 
+                        'actualizado_en' => now()
+                    ]
+                );
+
+            return response()->json(['success' => true, 'message' => 'BMI guardado con éxito en historiales_clinicos.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error de SQL: ' . $e->getMessage()], 500);
         }
     }
 

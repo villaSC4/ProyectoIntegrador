@@ -26,8 +26,28 @@
                 <div class="datos">
                     <div><span>DNI</span><strong>{{ $paciente->dni }}</strong></div>
                     <div><span>Edad</span><strong>{{ $edadCalculada }}</strong></div>
-                    <div><span>BMI</span><strong>{{ $historial->bmi ?? '23.4' }}</strong></div>
-                    <div><span>Especialidad</span><strong>Dermatología</strong></div>
+                    <div class="dato-fila-bmi" style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f3f4f6;">
+                        <span>BMI</span>
+                        
+                        <div class="bmi-interactivo-contenedor" style="width: 70%; display: flex; justify-content: flex-end; text-align: right;">
+                            
+                            <div id="bmi-visual-bloque" style="display: flex; align-items: center; justify-content: flex-end; gap: 6px;">
+                                <strong id="texto-bmi" style="color: #173436; font-weight: 600;">{{ $historial->bmi ?? '-------' }}</strong>
+                                <button type="button" class="btn-lapiz" id="btn-editar-bmi" title="Editar BMI" style="background:none; border:none; cursor:pointer; padding:0; font-size:12px; line-height: 1;">✏️</button>
+                            </div>
+                            
+                            <form id="form-editar-bmi" class="mini-form-inline oculto" style="display: flex; align-items: center; justify-content: flex-end; gap: 6px; width: 100%; margin: 0;">
+                                <input type="text" id="input-bmi" value="{{ $historial->bmi ?? '' }}" placeholder="23.4" required 
+                                    style="width: 55px; padding: 3px 6px; border: 1px solid #b9cccc; border-radius: 4px; font-size: 12px; font-weight: 600; color: #173436; text-align: right;" />
+                                <div class="mini-form-acciones" style="display: flex; gap: 4px; align-items: center;">
+                                    <button type="button" id="btn-guardar-bmi" style="background:none; border:none; cursor:pointer; font-size:12px; padding:0 2px; line-height: 1;">✔️</button>
+                                    <button type="button" id="btn-cancelar-bmi" style="background:none; border:none; cursor:pointer; font-size:12px; padding:0 2px; line-height: 1;">❌</button>
+                                </div>
+                            </form>
+
+                        </div>
+                    </div>
+                    <div><span>Especialidad</span><strong>{{ $doctorActivo->especialidad_nombre ?? 'Medicina General' }}</strong></div>
                     
                     <div class="dato-fila-motivo" style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f3f4f6;">
                         <span>Motivo</span>
@@ -149,7 +169,7 @@
                         </div>
                         <div class="preview-detalle">
                             <strong>Doctor responsable</strong>
-                            <p>Dr. Carlos Mendoza Ruiz</p>
+                            <p>{{ $doctorActivo->nombre ?? 'Dr. Carlos Mendoza Ruiz' }}</p>
                         </div>
                         
                         <div class="preview-acciones">
@@ -244,12 +264,12 @@
                                 $citaAsociada = DB::table('citas_medicas')->where('id', $recetaActual->cita_medica_id)->first();
                             @endphp
                             
-                            <h4 data-receta-titulo style="color: #173436; font-size: 18px; font-weight: 700; margin: 10px 0 2px;">RX-000{{ $recetaActual->id }}</h4>
-                            <p data-receta-meta style="color: #6b7280; font-size: 13px; margin: 0 0 15px;">{{ \Carbon\Carbon::parse($recetaActual->fecha_emision)->format('d/m/Y') }} · Dermatología</p>
+                            <h4 data-receta-titulo style="color: #173436; font-size: 18px; font-weight: 700; margin: 10px 0 2px;">RX</h4>
+                            <p data-receta-meta style="color: #6b7280; font-size: 13px; margin: 0 0 15px;">----</p>
                             
                             <div class="preview-detalle" style="margin-bottom: 15px;">
                                 <strong style="display: block; color: #173436; font-size: 13px; margin-bottom: 4px;">Diagnostico relacionado</strong>
-                                <p data-receta-diagnostico style="margin: 0; color: #4b5563; font-size: 14px;">{{ $citaAsociada->diagnostico ?? 'Consulta General' }}</p>
+                                <p data-receta-diagnostico style="margin: 0; color: #4b5563; font-size: 14px;">----</p>
                             </div>
                             
                             <div class="preview-detalle" style="margin-bottom: 15px;">
@@ -316,9 +336,11 @@
                             <option value="Confirmado">Confirmado</option>
                         </select>
                     </label>
-                    <label>
+                   <label>
                         Doctor responsable
-                        <input type="text" id="modal-doctor" name="doctor" readonly value="Dr. Carlos Mendoza Ruiz" style="background-color: #f3f4f6; color: #6b7280; cursor: not-allowed; border: 1px solid #d1d5db; width: 100%;" />
+                        <input type="text" id="modal-doctor" name="doctor" readonly 
+                            value="{{ $doctorActivo->nombre ?? 'Dr. Carlos Mendoza Ruiz' }}" 
+                            style="background-color: #f3f4f6; color: #6b7280; cursor: not-allowed; border: 1px solid #d1d5db; width: 100%;" />
                     </label>
                 </div>
 
@@ -364,7 +386,7 @@
 
                 <div class="bloque-ver-item" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px; background-color: #fafafa;">
                     <strong style="display: block; color: #173436; font-size: 0.95rem; margin-bottom: 6px;">Doctor responsable</strong>
-                    <p id="ver-doctor" style="margin: 0; color: #374151; font-size: 0.9rem; font-weight: 500;">Dr. Carlos Mendoza Ruiz</p>
+                    <p id="ver-doctor" style="margin: 0; color: #374151; font-size: 0.9rem; font-weight: 500;">{{ $doctorActivo->nombre ?? 'Dr. Aaron Palomino' }}</p>
                 </div>
 
             </div>

@@ -76,3 +76,5 @@ Route::get('/pantalla-paciente', function () {
         return view('paginas.doctor.traductor.traductor-senas');
     })->name('doctor.traductor-senas');
 
+Route::post('/doctor/api/actualizar-bmi-paciente', [DoctorController::class, 'actualizarBmiPaciente'])->name('doctor.actualizarBmi');
+
