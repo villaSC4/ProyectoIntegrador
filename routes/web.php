@@ -69,12 +69,12 @@ Route::prefix('doctor')->group(function () {
     Route::delete('/api/eliminar-receta-medica/{id}', [DoctorController::class, 'eliminarRecetaMedica']);
 });
 Route::get('/pantalla-paciente', function () {
-        return view('paginas.doctor.traductor.pantalla-paciente');
-    })->name('doctor.pantalla-paciente');
+    return view('paginas.doctor.traductor.pantalla-paciente');
+})->name('doctor.pantalla-paciente');
 
-    Route::get('/traductor-senas', function () {
-        return view('paginas.doctor.traductor.traductor-senas');
-    })->name('doctor.traductor-senas');
+Route::get('/traductor-senas', function () {
+    return view('paginas.doctor.traductor.traductor-senas');
+})->name('doctor.traductor-senas');
 
 Route::post('/doctor/api/actualizar-bmi-paciente', [DoctorController::class, 'actualizarBmiPaciente'])->name('doctor.actualizarBmi');
 

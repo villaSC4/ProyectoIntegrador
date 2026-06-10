@@ -24,78 +24,73 @@ class SenaController extends Controller
             $p_medio    = $puntos[12]; $b_medio    = $puntos[10];
             $p_anular   = $puntos[16]; $b_anular   = $puntos[14];
             $p_menique  = $puntos[20]; $b_menique  = $puntos[18];
-            $muneca     = $puntos[0];
 
-            $indiceArriba  = $p_indice['y']  < $b_indice['y'];
-            $medioArriba   = $p_medio['y']   < $b_medio['y'];
-            $anularArriba  = $p_anular['y']  < $b_anular['y'];
-            $meniqueArriba = $p_menique['y'] < $b_menique['y'];
+            $indiceArriba  = ($puntos[8]['y']  < $puntos[7]['y'])  && ($puntos[8]['y']  < $puntos[6]['y'])  && ($puntos[8]['y']  < $puntos[5]['y']);
+            $medioArriba   = ($puntos[12]['y'] < $puntos[11]['y']) && ($puntos[12]['y'] < $puntos[10]['y']) && ($puntos[12]['y'] < $puntos[9]['y']);
+            $anularArriba  = ($puntos[16]['y'] < $puntos[15]['y']) && ($puntos[16]['y'] < $puntos[14]['y']) && ($puntos[16]['y'] < $puntos[13]['y']);
+            $meniqueArriba = ($puntos[20]['y'] < $puntos[19]['y']) && ($puntos[20]['y'] < $puntos[18]['y']) && ($puntos[20]['y'] < $puntos[17]['y']);
 
             $distPulgarIndice = $this->calcularDistancia($p_pulgar, $p_indice);
             $distPulgarMedio  = $this->calcularDistancia($p_pulgar, $p_medio);
             $distIndiceMedio  = $this->calcularDistancia($p_indice, $p_medio);
-            $distMedioAnular  = $this->calcularDistancia($p_medio, $p_anular);
-            $distPulgarMenique = $this->calcularDistancia($p_pulgar, $p_menique);
 
-            $señaDetectada = null;
             $especialidadId = null;
 
-            if ($p_indice['y'] > $b_indice['y'] && $p_medio['y'] > $b_medio['y'] && $p_anular['y'] > $b_anular['y']
-                && $p_indice['y'] > $p_pulgar['y'] && $distPulgarIndice > 0.08 && $distIndiceMedio < 0.07) {
-                
+            // 👆 ID 1: Dermatolog (Forma de "Garra" hacia abajo)
+            if ($puntos[8]['y'] > $puntos[5]['y'] && $puntos[12]['y'] > $puntos[9]['y'] && $puntos[16]['y'] > $puntos[13]['y'] 
+                && $puntos[8]['y'] > $puntos[4]['y'] && $distPulgarIndice > 0.08) {
                 $especialidadId = 1;
             }
 
-            // ID 5: Odontolog (Forma de "Pinza de Diente" - Pulgar e Índice arqueados casi tocándose, Medio/Anular/Meñique bien cerrados)
-            elseif ($indiceArriba && !$medioArriba && !$anularArriba && !$meniqueArriba 
-                    && $distPulgarIndice > 0.02 && $distPulgarIndice < 0.06) {
-                
+            // 👌 ID 5: Odontolog (Pinza Pulgar-Índice cerrada, los otros tres dedos COMPLETAMENTE CERRADOS)
+            elseif ($distPulgarIndice < 0.045 && !$medioArriba && !$anularArriba && !$meniqueArriba) {
                 $especialidadId = 5;
             }
 
-            // ID 7: Neurolog (Forma de "Cerebro/Pensamiento" - Solo el Índice estirado hacia arriba vibrando solo, los demás dedos aplastados contra la palma)
-            elseif ($indiceArriba && !$medioArriba && !$anularArriba && !$meniqueArriba 
-                    && $p_pulgar['y'] > $b_pulgar['y'] && $distPulgarIndice >= 0.07) {
-                
-                $especialidadId = 7;
-            }
-
-            //  ID 4: Cardiolog (Forma de "Medio Corazón" - Mano cóncava, todos los dedos curvados juntos hacia adentro, el pulgar cierra la base)
-            elseif (!$indiceArriba && !$medioArriba && !$anularArriba && !$meniqueArriba 
-                    && $distPulgarIndice < 0.05 && $distPulgarMenique < 0.07) {
-                
-                $especialidadId = 4;
-            }
-
-            // ID 2: Ginecolog (Índice y Medio arriba bien pegados, Anular y Meñique abajo)
-            elseif ($indiceArriba && $medioArriba && !$anularArriba && !$meniqueArriba && $distIndiceMedio <= 0.04) {
-                $especialidadId = 2;
-            }
-
-            // ID 3: Pediatr (Mano completamente abierta y dedos estirados hacia arriba)
-            elseif ($indiceArriba && $medioArriba && $anularArriba && $meniqueArriba && $distIndiceMedio > 0.05) {
-                $especialidadId = 3;
-            }
-
-            // ID 6: Oftalmolog (Forma de "Anteojo" - Círculo cerrado entre Pulgar e Índice, los otros 3 dedos estirados arriba)
-            elseif (!$indiceArriba && $medioArriba && $anularArriba && $meniqueArriba && $distPulgarIndice < 0.03) {
+            // 👌 ID 6: Oftalmolog (Pinza Pulgar-Índice cerrada, pero los otros tres dedos ABIERTOS Y ESTIRADOS)
+            elseif ($distPulgarIndice < 0.045 && $medioArriba && $anularArriba && $meniqueArriba) {
                 $especialidadId = 6;
             }
 
-            //  ID 8: Traumatolog (Forma de "Hueso/Quiebre" - Índice y Medio arriba doblados a la mitad, Anular y Meñique cerrados)
-            elseif ($indiceArriba && $medioArriba && !$anularArriba && !$meniqueArriba && $p_indice['y'] > $b_indice['y'] * 0.9 && $distIndiceMedio < 0.05) {
+            // ☝️ ID 7: Neurolog (Solo el Índice arriba controlando el eje vertical, bien alejado del pulgar)
+            elseif ($indiceArriba && !$medioArriba && !$anularArriba && !$meniqueArriba && $distPulgarIndice >= 0.07) {
+                $especialidadId = 7;
+            }
+
+            // 🫴 ID 4: Cardiolog (Letra "C" - Arco abierto horizontal cóncavo)
+            elseif (!$indiceArriba && !$medioArriba && !$anularArriba && !$meniqueArriba 
+                    && $distPulgarIndice >= 0.09 && $distPulgarIndice <= 0.18 && $p_pulgar['x'] < $p_indice['x']) {
+                $especialidadId = 4;
+            }
+
+            // ✌️ ID 8: Traumatolog (Dedos Índice y Medio arriba BIEN SEPARADOS en "V" ancha)
+            elseif ($indiceArriba && $medioArriba && !$anularArriba && !$meniqueArriba && $distIndiceMedio > 0.065) {
                 $especialidadId = 8;
             }
 
-            //  ID 9: Psiquiatr (Letra "P" pura - Índice al frente horizontal, Medio apuntando abajo, Pulgar tocando el medio)
-            elseif ($indiceArriba && !$medioArriba && !$anularArriba && !$meniqueArriba && $p_medio['y'] > $b_medio['y'] && $distPulgarMedio < 0.05) {
+            // 🤞 ID 2: Ginecolog (Dedos Índice y Medio arriba JUNTOS en postura natural/relajada)
+            elseif ($indiceArriba && $medioArriba && !$anularArriba && !$meniqueArriba 
+                    && $distIndiceMedio <= 0.04 && $distIndiceMedio > 0.022) {
+                $especialidadId = 2;
+            }
+
+            // 🔟 ID 10: Urolog (Dedos Índice y Medio PEGADOS RÍGIDAMENTE e hiper-estirados hacia el techo)
+            elseif ($indiceArriba && $medioArriba && !$anularArriba && !$meniqueArriba 
+                    && $distIndiceMedio <= 0.022 && $p_medio['y'] < $puntos[10]['y'] * 0.55) {
+                $especialidadId = 10;
+            }
+
+            // ✋ ID 3: Pediatr (Palma totalmente extendida frente a la cámara)
+            elseif ($indiceArriba && $medioArriba && $anularArriba && $meniqueArriba && $distIndiceMedio > 0.04) {
+                $especialidadId = 3;
+            }
+
+            // 🫵 ID 9: Psiquiatr (Letra "P" - Índice horizontal al frente, Medio apuntando abajo y Pulgar en pinza)
+            elseif ($indiceArriba && !$medioArriba && !$anularArriba && !$meniqueArriba 
+                    && $p_medio['y'] > $puntos[10]['y'] && $distPulgarMedio < 0.055) {
                 $especialidadId = 9;
             }
 
-            //ID 10: Urolog (Letra "U" extrema - Índice y Medio pegados apuntando rígidamente al techo)
-            elseif ($indiceArriba && $medioArriba && !$anularArriba && !$meniqueArriba && $distIndiceMedio < 0.03 && $p_medio['y'] < $b_medio['y'] * 0.6) {
-                $especialidadId = 10;
-            }
             if ($especialidadId) {
                 $especialidad = DB::table('especialidades')->where('id', $especialidadId)->first();
                 if ($especialidad) {
@@ -106,15 +101,6 @@ class SenaController extends Controller
                         'tipo' => 'especialidad'
                     ]);
                 }
-            }
-
-            if ($señaDetectada) {
-                return response()->json([
-                    'success' => true,
-                    'id' => null,
-                    'nombre' => $señaDetectada,
-                    'tipo' => 'vocabulario'
-                ]);
             }
 
             return response()->json([
@@ -133,9 +119,10 @@ class SenaController extends Controller
 
     private function calcularDistancia($punto1, $punto2)
     {
-        $x = pow($punto1['x'] - $punto2['x'], 2);
-        $y = pow($punto1['y'] - $punto2['y'], 2);
-        $z = pow($punto1['z'] - $punto2['z'], 2);
-        return sqrt($x + $y + $z);
+        return sqrt(
+            pow($punto1['x'] - $punto2['x'], 2) + 
+            pow($punto1['y'] - $punto2['y'], 2) + 
+            pow($punto1['z'] - $punto2['z'], 2)
+        );
     }
 }

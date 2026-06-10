@@ -80,7 +80,11 @@ document.addEventListener("DOMContentLoaded", function () {
             return fechaCitaLimpia === fechaFiltro;
         });
 
-        titulo.textContent = `Día ${diaStr} - ${agenda.length} pacientes de Dermatología`;
+        const nombreEspecialidad = agenda.length > 0 && agenda[0].especialidad_nombre 
+            ? agenda[0].especialidad_nombre 
+            : 'Especialidades';
+
+        titulo.textContent = `Día ${diaStr} - ${agenda.length} pacientes de ${nombreEspecialidad}`;
 
         if (agenda.length === 0) {
             lista.innerHTML = `
