@@ -42,6 +42,7 @@ class Administrador extends Authenticatable implements FilamentUser, HasName
     {
         return Attribute::make(
             get: fn () => $this->nombre,
+            set: fn ($value) => ['nombre' => $value],
         );
     }
 
