@@ -1,6 +1,9 @@
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import ComponenteTraductor from './components/ComponenteTraductor';
+
 // ==================== ELEMENTOS DEL DOM DEL TRADUCTOR ====================
-const salida = document.querySelector("[data-traduccion]");
-const estadoCamara = document.querySelector("[data-estado-camara]");
+const salida = document.getElementById("texto-traduccion-dinamica");
 const botonVoz = document.querySelector("[data-reproducir-voz]");
 const formDoctor = document.querySelector("[data-form-doctor]");
 const mensajeDoctor = document.querySelector("[data-mensaje-doctor]");
@@ -17,12 +20,13 @@ if ("BroadcastChannel" in window) {
   canalPaciente = new BroadcastChannel("medisign-paciente");
 }
 
-// ==================== TEXTO SIMULADO DEL PACIENTE ====================
-const mensajePacienteSimulado = [
-  "Tengo dolor en el rostro desde hace tres dias.",
-  "Tambien siento ardor cuando me lavo la cara.",
-  "Quiero saber si debo suspender la crema que estoy usando."
-];
+// ==================== FUNCION GLOBAL: CONEXIÓN CON LA IA DE REACT ====================
+// El componente de React llamará a esta función cada vez que se forme una nueva palabra/frase
+window.onSignLanguageInterpreted = (textoFormado) => {
+  if (salida) {
+    salida.textContent = textoFormado || "Esperando detección de señas...";
+  }
+};
 
 // ==================== VOZ: TEXTO RECONOCIDO HACIA AUDIO ====================
 const leerEnVozAlta = (texto) => {
@@ -71,27 +75,6 @@ const enviarAPantallaPaciente = () => {
 
   abrirPantallaPaciente();
   publicarMensajeDoctor(mensaje);
-};
-
-// ==================== SIMULACION DE RECONOCIMIENTO DE SEÑAS ====================
-const simularReconocimientoPaciente = () => {
-  let indice = 0;
-  let texto = "";
-
-  if (estadoCamara) estadoCamara.textContent = "Reconocimiento de señas en tiempo real";
-  if (salida) salida.textContent = "";
-
-  const intervalo = window.setInterval(() => {
-    texto = `${texto} ${mensajePacienteSimulado[indice]}`.trim();
-    if (salida) salida.textContent = texto;
-    indice += 1;
-
-    if (indice >= mensajePacienteSimulado.length) {
-      window.clearInterval(intervalo);
-      if (estadoCamara) estadoCamara.textContent = "Mensaje reconocido";
-      readEnVozAlta(texto);
-    }
-  }, 1200);
 };
 
 // ==================== EVENTOS DEL PACIENTE: REPRODUCIR VOZ ====================
@@ -146,7 +129,12 @@ formDoctor?.addEventListener("submit", (event) => {
   enviarAPantallaPaciente();
 });
 
-// ==================== INICIALIZACION DEL TRADUCTOR ====================
-window.addEventListener("load", () => {
-  window.setTimeout(simularReconocimientoPaciente, 900);
-});
+const contenedor = document.getElementById('mediasign-camera-root');
+if (contenedor) {
+  const root = createRoot(contenedor);
+  root.render(
+    <React.StrictMode>
+      <ComponenteTraductor />
+    </React.StrictMode>
+  );
+}

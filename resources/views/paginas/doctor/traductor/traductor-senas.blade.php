@@ -33,7 +33,7 @@
             </article>
             <article>
                 <span>Modo</span>
-                <strong>Tiempo real simulado</strong>
+                <strong>Tiempo real activo</strong>
             </article>
         </section>
 
@@ -44,17 +44,21 @@
                         <h3>Paciente: se&ntilde;as a texto</h3>
                         <p>La camara enfoca al paciente y el sistema muestra el texto reconocido.</p>
                     </div>
-                    <span class="etiqueta">Simulado</span>
+                    <span class="etiqueta" style="background: #10b981; color: white;">En Vivo</span>
                 </div>
-                <div class="camara-simulada">
-                    <div class="camara-estado" data-estado-camara>Detectando movimiento de manos...</div>
+                
+                <div id="mediasign-camera-root">
+                    <div class="camara-simulada">
+                        <div class="camara-estado" data-estado-camara>Cargando MediaPipe Landmarker...</div>
+                    </div>
                 </div>
+
                 <div class="traduccion">
                     <div class="traduccion-titulo">
                         <h4>Texto reconocido</h4>
                         <button type="button" class="boton-secundario" data-reproducir-voz>Reproducir voz</button>
                     </div>
-                    <p data-traduccion>Tengo dolor en el rostro desde hace tres dias.</p>
+                    <p id="texto-traduccion-dinamica" data-traduccion style="font-weight: bold; color: #10b981;">Esperando detección de señas...</p>
                 </div>
             </article>
 
@@ -95,5 +99,6 @@
 @endsection
 
 @push('doctor-scripts')
-    <script src="{{ asset('js/paginas/doctor/traductor/traductor-senas.js') }}"></script>
+    @viteReactRefresh
+    @vite(['resources/js/paginas/doctor/traductor/traductor-senas.jsx'])
 @endpush
