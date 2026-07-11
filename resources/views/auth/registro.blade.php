@@ -60,6 +60,9 @@
                     <div class="scanner-box" id="contenedor-video" style="position: relative;">
                         <img src="{{ asset('imagenes/imgRegistro/face.webp') }}" id="placeholder-face" alt="Reconocimiento facial">
                     </div>
+                    <div id="mensaje-preview-registro" class="mensaje-preview-registro" aria-live="polite">
+                        Vista previa lista. Pulsa Terminar para guardar tu cuenta.
+                    </div>
 
                     <div class="status-stack">
                         <div class="pill" id="estado-dni"><span></span> DNI ingresado</div>

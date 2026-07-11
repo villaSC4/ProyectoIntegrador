@@ -92,7 +92,9 @@ class DoctorResource extends Resource
                         ->required(),
                 ])->label('Horarios del Médico'),
 
-                Forms\Components\Hidden::make('face_vector'),
+                Forms\Components\Hidden::make('face_vector')
+                    ->required(fn (string $operation): bool => $operation === 'create')
+                    ->validationAttribute('validacion biometrica'),
 
                 ViewField::make('formulario_biometrico_completo')
                     ->view('filament.components.camara-escaneo')
