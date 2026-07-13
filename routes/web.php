@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\AuthFacialController; 
 use App\Http\Controllers\SenaController;
+use App\Http\Controllers\SenaConversacionController;
 use App\Models\Doctor;
 use App\Http\Controllers\CitaController;
 use App\Http\Controllers\DoctorController;
@@ -40,6 +41,10 @@ Route::get('/reconocimiento-senas', function () {
 })->name('señas'); 
 
 Route::post('/api/reconocer-sena', [SenaController::class, 'reconocerSena']);
+Route::post('/api/reconocer-sena-conversacion', [SenaConversacionController::class, 'reconocer']);
+Route::post('/api/senas-conversacion/muestras', [SenaConversacionController::class, 'guardarMuestra']);
+Route::get('/api/senas-conversacion/frases', [SenaConversacionController::class, 'listarFrases']);
+Route::delete('/api/senas-conversacion/frases/{codigo}', [SenaConversacionController::class, 'eliminarFrase']);
 
 Route::post('/logout', function () {
     Auth::logout(); 
@@ -77,4 +82,3 @@ Route::get('/traductor-senas', function () {
 })->name('doctor.traductor-senas');
 
 Route::post('/doctor/api/actualizar-bmi-paciente', [DoctorController::class, 'actualizarBmiPaciente'])->name('doctor.actualizarBmi');
-

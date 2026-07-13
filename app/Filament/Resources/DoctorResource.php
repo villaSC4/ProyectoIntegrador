@@ -106,6 +106,7 @@ class DoctorResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn ($query) => $query->with(['especialidad', 'horarios']))
             ->columns([
                 TextColumn::make('nombre')
                     ->label('Nombre del Doctor')
@@ -119,11 +120,15 @@ class DoctorResource extends Resource
                     ->badge()
                     ->color('primary'),
 
-                Tables\Columns\TextColumn::make('horarios.dia_semana')
+                Tables\Columns\TextColumn::make('dias_atencion')
                     ->label('Días de Atención')
+                    ->state(fn (Doctor $record): string => $record->horarios
+                        ->pluck('dia_semana')
+                        ->unique()
+                        ->values()
+                        ->implode(', ') ?: 'Sin horario')
                     ->badge()
-                    ->color('success')
-                    ->separator(', '),
+                    ->color('success'),
 
                 TextColumn::make('cupos_disponibles')
                     ->label('Cupos Restantes')
