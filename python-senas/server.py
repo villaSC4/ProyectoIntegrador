@@ -10,7 +10,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any
 
 MODEL_VERSION = "v4.0"
-ENGINE_BUILD = "postura-20260713-2"
+ENGINE_BUILD = "confirmacion-directa-20260714-3"
 NEGATIVE_CODE = "__ninguna_sena__"
 MINIMUM_SAMPLES_PER_PHRASE = 8
 MINIMUM_CONFIDENCE = 0.70
@@ -652,7 +652,9 @@ def edge_distance(a: list[dict[str, Any]], b: list[dict[str, Any]]) -> float:
 
 
 def classify(
-    sequence: list[dict[str, Any]], samples: list[dict[str, Any]]
+    sequence: list[dict[str, Any]],
+    samples: list[dict[str, Any]],
+    allow_undertrained: bool = False,
 ) -> dict[str, Any] | None:
     if not samples:
         return None
@@ -886,11 +888,33 @@ def classify(
 
     enough_samples = best["muestras"] >= MINIMUM_SAMPLES_PER_PHRASE
     strong_match = best["distancia"] <= acceptance_limit * 0.72
-    enough_separation = (second is None) or margin >= 0.075 or strong_match
+    trusted_candidate = (
+        enough_samples
+        and confidence >= 0.78
+        and best["distancia"] <= (acceptance_limit * 0.95)
+        and analysis["calidad"] >= 0.64
+    )
+    enough_separation = (
+        (second is None)
+        or margin >= 0.075
+        or strong_match
+        or trusted_candidate
+    )
+    negative_is_clearly_better = bool(
+        negative
+        and negative["distancia"] <= acceptance_limit
+        and (negative["distancia"] + 0.02) < best["distancia"]
+    )
     looks_negative = bool(
         negative
         and negative["distancia"] <= acceptance_limit
-        and negative["distancia"] <= (best["distancia"] + 0.015)
+        and (
+            negative_is_clearly_better
+            or (
+                not trusted_candidate
+                and negative["distancia"] <= (best["distancia"] + 0.015)
+            )
+        )
     )
     reinforced = (
         best["muestras"] >= 10
@@ -910,7 +934,7 @@ def classify(
         and not looks_negative
     )
 
-    if not enough_samples:
+    if not enough_samples and not allow_undertrained:
         return None
 
     alternatives = [
@@ -946,6 +970,8 @@ def classify(
             "rechazo_penalizado": bool(best.get("rechazo_penalizado")),
             "evidencia_aprendida": round(evidence, 3),
             "evidencia_reforzada": reinforced,
+            "candidato_confiable": trusted_candidate,
+            "negativo_claramente_mejor": negative_is_clearly_better,
             "negativo_calculado": looks_negative,
             "aceptado_calculado": accepted,
             "build": ENGINE_BUILD,
@@ -1002,16 +1028,24 @@ class RequestHandler(BaseHTTPRequestHandler):
             incoming_samples = payload.get("muestras") or []
             revision = str(payload.get("revision_modelo") or "")
             update_model = bool(payload.get("actualizar_modelo"))
+            training_mode = bool(payload.get("modo_entrenamiento"))
             if not isinstance(sequence, list) or not isinstance(incoming_samples, list):
                 self._send_json(
                     422, {"ok": False, "message": "Formato de datos invalido."}
                 )
                 return
 
+            # Preparar el diccionario puede tardar mas que una prediccion. Se
+            # hace fuera del bloqueo para que health y las lecturas del modelo
+            # activo no queden congeladas durante la sincronizacion.
+            prepared_samples = (
+                prepare_model_samples(incoming_samples) if update_model else None
+            )
+
             global MODEL_REVISION, MODEL_SAMPLES
             with MODEL_LOCK:
                 if update_model:
-                    MODEL_SAMPLES = prepare_model_samples(incoming_samples)
+                    MODEL_SAMPLES = prepared_samples or []
                     MODEL_REVISION = revision
                 elif MODEL_REVISION != revision:
                     self._send_json(
@@ -1026,7 +1060,11 @@ class RequestHandler(BaseHTTPRequestHandler):
                 samples = list(MODEL_SAMPLES)
 
             started = time.perf_counter()
-            prediction = classify(sequence, samples)
+            prediction = classify(
+                sequence,
+                samples,
+                allow_undertrained=training_mode,
+            )
             elapsed_ms = (time.perf_counter() - started) * 1000
             self._send_json(
                 200,

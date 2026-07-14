@@ -6,7 +6,11 @@ const botonToggleCamara = document.querySelector("[data-toggle-camara]");
 const botonEnfocarCamara = document.querySelector("[data-enfocar-camara]");
 const videoSenas = document.querySelector("[data-video-senas]");
 const canvasSenas = document.querySelector("[data-canvas-senas]");
-const mostrarPuntosManos = canvasSenas?.dataset.mostrarPuntos !== "false";
+
+// Controles visuales de depuracion. Cambie a false para ocultar una guia.
+const MOSTRAR_SEGUIMIENTO_MANOS = false;
+const MOSTRAR_SEGUIMIENTO_ROSTRO = false;
+const MOSTRAR_SEGUIMIENTO_TORSO = false;
 const guiaCamara = document.querySelector(".camara-guia");
 const contextoCalidad = document.querySelector("[data-contexto-calidad]");
 const resultadoEnVivo = document.querySelector("[data-resultado-en-vivo]");
@@ -84,6 +88,8 @@ let ultimaSenaReconocidaEn = 0;
 let ultimoFrameConMano = 0;
 let ultimosPuntosMano = null;
 let ultimasManos = [];
+let ultimosPuntosRostro = [];
+let ultimosPuntosPose = [];
 let ultimaPrediccionSena = null;
 let codigoRechazadoCorreccion = "";
 let confianzaRechazadoCorreccion = null;
@@ -125,12 +131,14 @@ let secuenciaCorreccion = [];
 let correccionVioManos = false;
 let ultimoFrameCorreccionConManos = 0;
 let reconocimientoPausadoPorEntrenamiento = false;
+let ultimoSegmentoEncoladoFin = 0;
+let pausaReconocimientoHasta = 0;
 
-const RETENCION_MANO_OCULTA_MS = 420;
+const RETENCION_MANO_OCULTA_MS = 320;
 const DURACION_MINIMA_SENA_MS = 260;
-const DURACION_MAXIMA_SENA_ESTATICA_MS = 900;
+const DURACION_MAXIMA_SENA_ESTATICA_MS = 700;
 const DURACION_MAXIMA_SENA_DINAMICA_MS = 2600;
-const PAUSA_CIERRE_SENA_ESTATICA_MS = 170;
+const PAUSA_CIERRE_SENA_ESTATICA_MS = 140;
 const PAUSA_CIERRE_SENA_DINAMICA_MS = 280;
 const UMBRAL_MOVIMIENTO_SENA = 0.038;
 const UMBRAL_CAMBIO_POSTURA_SENA = 0.20;
@@ -142,14 +150,18 @@ const TAMANO_MINIMO_MANO = 0.022;
 const TAMANO_MINIMO_MANO_LEJANA = 0.012;
 const CONFIANZA_MINIMA_MANO_LEJANA = 0.58;
 const CONTEXTO_CORPORAL_VIGENTE_MS = 1400;
+const INTERVALO_ANALISIS_ROSTRO_MS = 50;
+const INTERVALO_ANALISIS_TORSO_MS = 320;
 const TAMANO_MAXIMO_MANO = 0.50;
 const DIFERENCIA_MAXIMA_FORMA_MANO = 0.42;
 const AUSENCIA_REINICIA_REPETICION_MS = 900;
-const MAX_SEGMENTOS_EN_COLA = 60;
-const MAX_RECONOCIMIENTOS_CONCURRENTES = 2;
-const TIMEOUT_RECONOCIMIENTO_MS = 6000;
+const MAX_SEGMENTOS_EN_COLA = 8;
+const MAX_RECONOCIMIENTOS_CONCURRENTES = 1;
+const TIMEOUT_RECONOCIMIENTO_MS = 12000;
+const PAUSA_TRAS_ERROR_RECONOCIMIENTO_MS = 1800;
 const COOLDOWN_MISMA_SENA_MS = 900;
 const COOLDOWN_EMISION_CODIGO_MS = 900;
+const UMBRAL_CONFIRMACION_CANDIDATO = 0.81;
 const VENTANA_CONFIRMACION_ENTRENAMIENTO_MS = 20000;
 const CODIGO_NINGUNA_SENA = "__ninguna_sena__";
 
@@ -160,6 +172,31 @@ const CONEXIONES_MANO = [
     [9, 13], [13, 14], [14, 15], [15, 16],
     [13, 17], [0, 17], [17, 18], [18, 19], [19, 20],
 ];
+
+const CONEXIONES_ROSTRO = [
+    [10, 338], [338, 297], [297, 332], [332, 284], [284, 251],
+    [251, 389], [389, 356], [356, 454], [454, 323], [323, 361],
+    [361, 288], [288, 397], [397, 365], [365, 379], [379, 378],
+    [378, 400], [400, 377], [377, 152], [152, 148], [148, 176],
+    [176, 149], [149, 150], [150, 136], [136, 172], [172, 58],
+    [58, 132], [132, 93], [93, 234], [234, 127], [127, 162],
+    [162, 21], [21, 54], [54, 103], [103, 67], [67, 109], [109, 10],
+    [33, 160], [160, 158], [158, 133], [133, 153], [153, 144], [144, 33],
+    [263, 387], [387, 385], [385, 362], [362, 380], [380, 373], [373, 263],
+    [70, 63], [63, 105], [105, 66], [66, 107],
+    [336, 296], [296, 334], [334, 293], [293, 300],
+    [61, 40], [40, 37], [37, 0], [0, 267], [267, 270], [270, 291],
+    [291, 321], [321, 314], [314, 17], [17, 84], [84, 91], [91, 61],
+    [168, 6], [6, 1], [1, 2], [2, 98], [2, 327],
+];
+
+const CONEXIONES_TORSO = [
+    [11, 12], [11, 13], [13, 15], [12, 14], [14, 16],
+    [11, 23], [12, 24], [23, 24],
+];
+
+const PUNTOS_ROSTRO_VISIBLES = [...new Set(CONEXIONES_ROSTRO.flat())];
+const PUNTOS_TORSO_VISIBLES = [...new Set(CONEXIONES_TORSO.flat())];
 
 if ("BroadcastChannel" in window) {
     canalPaciente = new BroadcastChannel("medisign-paciente");
@@ -533,7 +570,10 @@ const distanciaFirmasPostura = (a, b) => {
 };
 
 const encolarSegmentoReconocimiento = (secuencia) => {
-    if (reconocimientoPausadoPorEntrenamiento) return false;
+    if (
+        reconocimientoPausadoPorEntrenamiento ||
+        Date.now() < pausaReconocimientoHasta
+    ) return false;
 
     const segmento = describirSegmento(secuencia);
     if (
@@ -542,10 +582,10 @@ const encolarSegmentoReconocimiento = (secuencia) => {
         segmento.duracion < 260
     ) return false;
 
-    const ultimoEnCola = colaSegmentosReconocimiento.at(-1);
-    if (ultimoEnCola && segmento.fin <= ultimoEnCola.segmento.fin + 80) {
+    if (segmento.fin <= ultimoSegmentoEncoladoFin + 80) {
         return false;
     }
+    ultimoSegmentoEncoladoFin = segmento.fin;
 
     colaSegmentosReconocimiento.push({
         secuencia,
@@ -559,8 +599,10 @@ const encolarSegmentoReconocimiento = (secuencia) => {
     }
 
     actualizarResultadoEnVivo(
-        "Analizando sena...",
-        "Comparando el gesto actual con el diccionario aprendido.",
+        reconocimientosActivos > 0 ? "Sena capturada" : "Analizando sena...",
+        reconocimientosActivos > 0
+            ? `Esperando el resultado anterior. ${colaSegmentosReconocimiento.length} en cola.`
+            : "Buscando la mejor interpretacion en el diccionario aprendido.",
         "provisional",
     );
     procesarColaReconocimiento();
@@ -709,6 +751,46 @@ const actualizarCalidadGrabacion = () => {
     contextoCalidad.dataset.estado = calidad >= 70 ? "ok" : "alerta";
 };
 
+const dibujarEsqueleto = (
+    ctx,
+    puntos,
+    conexiones,
+    indicesVisibles,
+    ancho,
+    alto,
+    color,
+    radio,
+) => {
+    if (!puntos?.length) return;
+
+    const esVisible = (punto) =>
+        punto && (punto.visibility === undefined || punto.visibility > 0.25);
+
+    ctx.save();
+    ctx.lineWidth = Math.max(1.5, ancho / 520);
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.strokeStyle = color;
+    ctx.fillStyle = "rgba(255, 255, 255, 0.92)";
+
+    conexiones.forEach(([a, b]) => {
+        if (!esVisible(puntos[a]) || !esVisible(puntos[b])) return;
+        ctx.beginPath();
+        ctx.moveTo(puntos[a].x * ancho, puntos[a].y * alto);
+        ctx.lineTo(puntos[b].x * ancho, puntos[b].y * alto);
+        ctx.stroke();
+    });
+
+    indicesVisibles.forEach((indice) => {
+        const punto = puntos[indice];
+        if (!esVisible(punto)) return;
+        ctx.beginPath();
+        ctx.arc(punto.x * ancho, punto.y * alto, radio, 0, Math.PI * 2);
+        ctx.fill();
+    });
+    ctx.restore();
+};
+
 const dibujarManos = (manos = []) => {
     if (!canvasSenas || !videoSenas) return;
 
@@ -721,7 +803,34 @@ const dibujarManos = (manos = []) => {
 
     const ctx = canvasSenas.getContext("2d");
     ctx.clearRect(0, 0, ancho, alto);
-    if (!mostrarPuntosManos) return;
+
+    if (MOSTRAR_SEGUIMIENTO_TORSO) {
+        dibujarEsqueleto(
+            ctx,
+            ultimosPuntosPose,
+            CONEXIONES_TORSO,
+            PUNTOS_TORSO_VISIBLES,
+            ancho,
+            alto,
+            "rgba(0, 179, 255, 0.82)",
+            Math.max(2.5, ancho / 420),
+        );
+    }
+
+    if (MOSTRAR_SEGUIMIENTO_ROSTRO) {
+        dibujarEsqueleto(
+            ctx,
+            ultimosPuntosRostro,
+            CONEXIONES_ROSTRO,
+            PUNTOS_ROSTRO_VISIBLES,
+            ancho,
+            alto,
+            "rgba(0, 255, 202, 0.72)",
+            Math.max(1.5, ancho / 700),
+        );
+    }
+
+    if (!MOSTRAR_SEGUIMIENTO_MANOS) return;
     ctx.lineWidth = Math.max(2, ancho / 360);
     ctx.strokeStyle = "rgba(0, 255, 202, 0.9)";
     ctx.fillStyle = "#ffffff";
@@ -876,6 +985,56 @@ const diferenciaFormaMano = (anterior, actual) => {
     }, 0) / puntos.length;
 };
 
+const suavizarManoDetectada = (anterior, actual, tiempoTranscurrido = 33) => {
+    if (!anterior?.length || anterior.length !== actual?.length) {
+        return (actual || []).map((punto) => ({ ...punto }));
+    }
+
+    const escala = Math.max(
+        0.025,
+        distanciaPuntosMano2D(actual[0], actual[9]),
+    );
+    const puntosClave = [0, 4, 8, 12, 16, 20];
+    const movimiento = puntosClave.reduce(
+        (suma, indice) =>
+            suma + distanciaPuntosMano2D(anterior[indice], actual[indice]) / escala,
+        0,
+    ) / puntosClave.length;
+
+    // La mano quieta recibe mas suavizado para eliminar el temblor de la camara.
+    // Cuando la sena se mueve, el filtro se abre para no perder su trayectoria.
+    const base = movimiento >= 0.30
+        ? 0.90
+        : movimiento >= 0.14
+            ? 0.74
+            : movimiento >= 0.06
+                ? 0.52
+                : 0.32;
+    const pasos = Math.max(0.55, Math.min(2.5, tiempoTranscurrido / 33));
+    const alpha = 1 - Math.pow(1 - base, pasos);
+    const alphaZ = Math.min(0.92, alpha + 0.08);
+
+    return actual.map((punto, indice) => {
+        const previo = anterior[indice] || punto;
+        return {
+            ...punto,
+            x: previo.x + ((punto.x - previo.x) * alpha),
+            y: previo.y + ((punto.y - previo.y) * alpha),
+            z: (previo.z || 0) + (((punto.z || 0) - (previo.z || 0)) * alphaZ),
+        };
+    });
+};
+
+const esContinuacionRecienteDeMano = (mano, ahora = Date.now()) =>
+    [...memoriaManos.values()].some((valor) =>
+        ahora - valor.t <= RETENCION_MANO_OCULTA_MS &&
+        distanciaPuntosMano2D(valor.mano?.[0], mano?.[0]) <= 0.16 &&
+        Math.hypot(
+            centroManoEnCamara(valor.mano).x - centroManoEnCamara(mano).x,
+            centroManoEnCamara(valor.mano).y - centroManoEnCamara(mano).y,
+        ) <= 0.14,
+    );
+
 const deteccionesRepresentanMismaMano = (
     primera,
     segunda,
@@ -949,9 +1108,13 @@ const esManoPlausible = (resultado, indice, mano) => {
     const profundidad = Math.max(...valoresZ) - Math.min(...valoresZ);
     const profundidadNormalizada = profundidad / Math.max(escala, 0.001);
     const manoLejana = escala < TAMANO_MINIMO_MANO;
-    const confianzaMinima = manoLejana
+    const continuacionReciente = esContinuacionRecienteDeMano(mano);
+    const confianzaBase = manoLejana
         ? CONFIANZA_MINIMA_MANO_LEJANA
         : CONFIANZA_MINIMA_MANO;
+    const confianzaMinima = continuacionReciente
+        ? Math.min(confianzaBase, 0.38)
+        : confianzaBase;
 
     if (
         confianza < confianzaMinima ||
@@ -980,15 +1143,18 @@ const esManoPlausible = (resultado, indice, mano) => {
     const vistaDeCanto =
         proporcionPalma2D < 0.30 &&
         (proporcionPalma >= 0.18 || profundidadNormalizada >= 0.10);
-    const estructuraMinima =
-        segmentosValidos >= 17 &&
-        dedosValidos >= 2 &&
-        (palmaReconocible || vistaDeCanto || amplitudPuntos >= 0.16);
+    const estructuraMinima = continuacionReciente
+        ? segmentosValidos >= 14 &&
+            dedosValidos >= 1 &&
+            (palmaReconocible || vistaDeCanto || amplitudPuntos >= 0.12)
+        : segmentosValidos >= 16 &&
+            dedosValidos >= 2 &&
+            (palmaReconocible || vistaDeCanto || amplitudPuntos >= 0.16);
     const contextoValido = manoLejana
         ? manoLejanaCoherenteConElCuerpo(mano)
         : manoDentroDelAreaDeConversacion(mano);
 
-    return estructuraMinima && contextoValido;
+    return estructuraMinima && (contextoValido || continuacionReciente);
 };
 
 const etiquetaMediaPipe = (resultado, indice) => {
@@ -1093,17 +1259,29 @@ const estabilizarManosDetectadas = (resultado) => {
                 anterior.confirmaciones + 1,
             )
             : 1;
-        memoriaManos.set(etiqueta, { mano, t: ahora, confirmaciones });
+        const manoEstable = esContinua
+            ? suavizarManoDetectada(anterior.mano, mano, ahora - anterior.t)
+            : mano.map((punto) => ({ ...punto }));
+        memoriaManos.set(etiqueta, {
+            mano: manoEstable,
+            t: ahora,
+            confirmaciones,
+        });
     });
 
     const confirmacionesRequeridas = candidatasConEtiqueta.length >= 2
         ? FRAMES_CONFIRMACION_SEGUNDA_MANO
         : FRAMES_CONFIRMACION_MANO;
-    const realesConEtiqueta = candidatasConEtiqueta.filter(
-        ({ etiqueta }) =>
-            (memoriaManos.get(etiqueta)?.confirmaciones || 0) >=
-            confirmacionesRequeridas,
-    );
+    const realesConEtiqueta = candidatasConEtiqueta
+        .filter(
+            ({ etiqueta }) =>
+                (memoriaManos.get(etiqueta)?.confirmaciones || 0) >=
+                confirmacionesRequeridas,
+        )
+        .map((candidata) => ({
+            ...candidata,
+            mano: memoriaManos.get(candidata.etiqueta)?.mano || candidata.mano,
+        }));
 
     const etiquetasVisibles = new Set(
         realesConEtiqueta.map(({ etiqueta }) => etiqueta),
@@ -1215,18 +1393,33 @@ const procesarPrediccionEstable = (data, secuenciaEnviada = []) => {
     const ahora = Date.now();
 
     if (!data.codigo || !data.texto) {
+        if (data.estado === "motor_no_disponible") {
+            pausaReconocimientoHasta = ahora + PAUSA_TRAS_ERROR_RECONOCIMIENTO_MS;
+            actualizarResultadoEnVivo(
+                "Motor Python no disponible",
+                data.texto || "Revise que el servidor Python este encendido.",
+                "sin-coincidencia",
+            );
+            actualizarEstadoCamara(
+                data.texto || "Esperando al motor de traduccion...",
+                "error",
+            );
+            return;
+        }
+
         const candidato = data.candidato;
         if (candidato?.texto) {
+            const confianzaCandidato = Number(candidato.confianza) || 0;
             const porcentajeCandidato = Math.round(
-                (Number(candidato.confianza) || 0) * 100,
+                confianzaCandidato * 100,
             );
             const modoEntrenamiento =
                 botonToggleEntrenamiento?.dataset.activo === "true";
 
             if (modoEntrenamiento && candidato.codigo) {
                 actualizarResultadoEnVivo(
-                    "Entrenamiento activo",
-                    "Revise el resultado capturado en el panel de entrenamiento.",
+                    `Mejor resultado: ${candidato.texto}`,
+                    "Marque Correcto, Corregir, Ninguno o Descartar para ensenar al modelo.",
                     "provisional",
                 );
                 actualizarEstadoCamara(
@@ -1239,6 +1432,22 @@ const procesarPrediccionEstable = (data, secuenciaEnviada = []) => {
                         texto: candidato.texto,
                         confianza: Number(candidato.confianza) || 0,
                         agregadaAlTexto: false,
+                    },
+                    secuenciaEnviada,
+                );
+                return;
+            }
+
+            if (
+                candidato.codigo &&
+                confianzaCandidato >= UMBRAL_CONFIRMACION_CANDIDATO
+            ) {
+                procesarPrediccionEstable(
+                    {
+                        ...data,
+                        codigo: candidato.codigo,
+                        texto: candidato.texto,
+                        confianza: confianzaCandidato,
                     },
                     secuenciaEnviada,
                 );
@@ -1276,8 +1485,8 @@ const procesarPrediccionEstable = (data, secuenciaEnviada = []) => {
 
     if (modoEntrenamiento) {
         actualizarResultadoEnVivo(
-            "Entrenamiento activo",
-            "El resultado se muestra una sola vez en el panel de entrenamiento.",
+            `Mejor resultado: ${data.texto}`,
+            "Marque Correcto, Corregir, Ninguno o Descartar para ensenar al modelo.",
             "provisional",
         );
         actualizarEstadoCamara(
@@ -1372,13 +1581,14 @@ const entregarResultadosReconocimientoEnOrden = () => {
             !reconocimientoPausadoPorEntrenamiento
         ) {
             console.error("Error al reconocer senas:", resultado.error);
+            pausaReconocimientoHasta = Date.now() + PAUSA_TRAS_ERROR_RECONOCIMIENTO_MS;
             actualizarEstadoCamara(
                 resultado.error.message || "No se pudo reconocer la sena. Intente de nuevo.",
                 "error",
             );
             actualizarResultadoEnVivo(
-                "Analisis interrumpido",
-                "El sistema se recupero. Repita la sena frente a la camara.",
+                "Motor temporalmente ocupado",
+                "Espere un momento; el siguiente gesto se analizara automaticamente.",
                 "sin-coincidencia",
             );
         }
@@ -1431,39 +1641,22 @@ const solicitarReconocimiento = async (trabajo) => {
 const procesarTrabajoReconocimiento = async (trabajo, orden) => {
     let resultado;
 
-    for (let intento = 0; intento < 2; intento += 1) {
-        try {
-            const data = await solicitarReconocimiento(trabajo);
-            resultado = {
-                data,
-                secuencia: trabajo.secuencia,
-                generacion: trabajo.generacion,
-            };
-            break;
-        } catch (error) {
-            const reintentable =
-                error?.name === "AbortError" ||
-                error instanceof TypeError ||
-                error?.reintentable === true;
-
-            if (intento === 0 && reintentable) {
-                actualizarResultadoEnVivo(
-                    "Reintentando analisis...",
-                    "La conexion se interrumpio un instante. Recuperando la misma sena.",
-                    "provisional",
-                );
-                continue;
-            }
-
-            const errorNormalizado = error?.name === "AbortError"
-                ? new Error("El analisis supero el tiempo maximo y fue cancelado.")
-                : error;
-            resultado = {
-                error: errorNormalizado,
-                generacion: trabajo.generacion,
-            };
-            break;
-        }
+    try {
+        const data = await solicitarReconocimiento(trabajo);
+        resultado = {
+            data,
+            secuencia: trabajo.secuencia,
+            generacion: trabajo.generacion,
+        };
+    } catch (error) {
+        const errorNormalizado = error?.name === "AbortError"
+            ? new Error("El motor de traduccion no respondio dentro del tiempo esperado.")
+            : error;
+        resultado = {
+            error: errorNormalizado,
+            generacion: trabajo.generacion,
+        };
+        colaSegmentosReconocimiento = [];
     }
 
     if (!resultado) {
@@ -1580,6 +1773,7 @@ const pausarReconocimientoParaEntrenamiento = () => {
     reconocimientoPausadoPorEntrenamiento = true;
     generacionCamara += 1;
     colaSegmentosReconocimiento = [];
+    ultimoSegmentoEncoladoFin = 0;
     segmentoEnCurso = null;
     ultimoFrameSegmentador = null;
     inicioAusenciaManos = 0;
@@ -1596,6 +1790,8 @@ const reanudarReconocimientoDespuesDeEntrenar = () => {
     if (!reconocimientoPausadoPorEntrenamiento) return;
 
     reconocimientoPausadoPorEntrenamiento = false;
+    pausaReconocimientoHasta = 0;
+    ultimoSegmentoEncoladoFin = 0;
     segmentoEnCurso = null;
     ultimoFrameSegmentador = null;
     inicioAusenciaManos = 0;
@@ -1887,6 +2083,8 @@ const actualizarControlesCamara = () => {
 
 const limpiarEstadoCamaraDesactivada = () => {
     colaSegmentosReconocimiento = [];
+    ultimoSegmentoEncoladoFin = 0;
+    pausaReconocimientoHasta = 0;
     segmentoEnCurso = null;
     ultimoFrameSegmentador = null;
     inicioAusenciaManos = 0;
@@ -1894,6 +2092,8 @@ const limpiarEstadoCamaraDesactivada = () => {
     firmaUltimoCorteSena = null;
     ultimasManos = [];
     ultimosPuntosMano = null;
+    ultimosPuntosRostro = [];
+    ultimosPuntosPose = [];
     memoriaManos = new Map();
     dibujarManos([]);
     guiaCamara?.classList.remove("oculto");
@@ -2015,6 +2215,8 @@ const iniciarReconocimientoReal = async () => {
     if (salida) salida.textContent = "Esperando senas del paciente...";
     colaSegmentosReconocimiento = [];
     reconocimientosActivos = 0;
+    ultimoSegmentoEncoladoFin = 0;
+    pausaReconocimientoHasta = 0;
     siguienteSolicitudReconocimiento = 1;
     siguienteResultadoReconocimiento = 1;
     resultadosReconocimientoPendientes = new Map();
@@ -2070,7 +2272,10 @@ const iniciarReconocimientoReal = async () => {
 
         if (manosEstables.seguimiento.length > 0) {
             ultimasManos = manosEstables.seguimiento;
-            registrarFrameManos(ultimasManos);
+            // El dibujo conserva una mano durante oclusiones muy breves, pero el
+            // clasificador recibe solo cuadros realmente observados. Asi una
+            // deteccion congelada no crea movimientos falsos ni corta la sena.
+            registrarFrameManos(manosEstables.reales);
             dibujarManos(manosEstables.seguimiento);
             guiaCamara?.classList.add("oculto");
             ultimosPuntosMano = ultimasManos[0];
@@ -2111,6 +2316,7 @@ const iniciarReconocimientoReal = async () => {
 
     pose?.onResults((results) => {
         const landmarks = results.poseLandmarks;
+        ultimosPuntosPose = landmarks || [];
         if (!landmarks || landmarks.length < 13) {
             if (Date.now() - ultimoCuerpoVisibleEn > CONTEXTO_CORPORAL_VIGENTE_MS) {
                 cuerpoActual = null;
@@ -2180,6 +2386,7 @@ const iniciarReconocimientoReal = async () => {
 
     faceMesh?.onResults((results) => {
         const rostro = results.multiFaceLandmarks?.[0];
+        ultimosPuntosRostro = rostro || [];
         if (!rostro) {
             if (Date.now() - ultimoRostroVisibleEn > CONTEXTO_CORPORAL_VIGENTE_MS) {
                 rostroActual = null;
@@ -2265,10 +2472,16 @@ const iniciarReconocimientoReal = async () => {
             if (!camaraActiva) return;
             await hands.send({ image: videoSenas });
             const ahora = Date.now();
-            if (pose && ahora - ultimoAnalisisTorso > 460) {
+            if (
+                pose &&
+                ahora - ultimoAnalisisTorso >= INTERVALO_ANALISIS_TORSO_MS
+            ) {
                 ultimoAnalisisTorso = ahora;
                 await pose.send({ image: videoSenas });
-            } else if (faceMesh && ahora - ultimoAnalisisRostro > 560) {
+            } else if (
+                faceMesh &&
+                ahora - ultimoAnalisisRostro >= INTERVALO_ANALISIS_ROSTRO_MS
+            ) {
                 ultimoAnalisisRostro = ahora;
                 await faceMesh.send({ image: videoSenas });
             }
@@ -2337,7 +2550,7 @@ botonLimpiarTranscripcion?.addEventListener("click", () => {
     renderizarTranscripcion();
     actualizarResultadoEnVivo(
         "Esperando una sena...",
-        "El porcentaje aparecera desde la primera coincidencia.",
+        "El modelo mostrara su mejor interpretacion para poder corregirla.",
     );
 });
 

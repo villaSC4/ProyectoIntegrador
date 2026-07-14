@@ -56,9 +56,9 @@
                     </div>
                     <small class="estado-voz" data-estado-voz>Voz automatica desactivada.</small>
                     <div class="resultado-en-vivo" data-resultado-en-vivo data-estado="esperando">
-                        <span>Coincidencia actual</span>
+                        <span>Resultado del modelo</span>
                         <strong data-coincidencia-en-vivo>Esperando una se&ntilde;a...</strong>
-                        <small data-estabilidad-en-vivo>El porcentaje aparecera desde la primera coincidencia.</small>
+                        <small data-estabilidad-en-vivo>En entrenamiento siempre veras la mejor interpretacion para confirmarla o corregirla.</small>
                     </div>
                     <p class="texto-transcripcion" data-traduccion>Esperando se&ntilde;as del paciente...</p>
                 </div>

@@ -41,7 +41,9 @@ class SenaConversacionController extends Controller
             $respuestaPython = $this->clasificarConPython(
                 $secuencia,
                 $muestras,
-                $revisionModelo
+                $revisionModelo,
+                false,
+                $modoEntrenamiento
             );
 
             if ($respuestaPython['requiere_modelo'] ?? false) {
@@ -50,20 +52,27 @@ class SenaConversacionController extends Controller
                     $secuencia,
                     $muestras,
                     $revisionModelo,
-                    true
+                    true,
+                    $modoEntrenamiento
                 );
             }
 
-            if ($respuestaPython['disponible'] ?? false) {
-                // Una respuesta valida sin prediccion significa "no reconocida".
-                // No se repite el calculo completo en PHP.
-                $prediccion = $respuestaPython['prediccion'] ?? null;
-            } else {
-                if ($muestras->isEmpty()) {
-                    $muestras = $this->cargarMuestrasModelo();
-                }
-                $prediccion = $this->recognizer->clasificar($secuencia, $muestras);
+            if (!($respuestaPython['disponible'] ?? false)) {
+                // Este traductor usa Python como motor de comparacion. Ejecutar
+                // de nuevo todo el modelo en PHP cuando Python esta ocupado
+                // bloquea el servidor local y acumula peticiones del navegador.
+                return response()->json([
+                    'success' => true,
+                    'codigo' => null,
+                    'texto' => 'El motor Python no esta disponible. Compruebe que siga encendido.',
+                    'estado' => 'motor_no_disponible',
+                    'calidad' => $analisis['calidad'],
+                ]);
             }
+
+            // Una respuesta valida sin prediccion significa "no reconocida".
+            // No se repite el calculo completo en PHP.
+            $prediccion = $respuestaPython['prediccion'] ?? null;
 
             $hayEntrenamiento = !$muestras->isEmpty()
                 || (int) ($respuestaPython['muestras_modelo'] ?? 0) > 0;
@@ -425,10 +434,20 @@ class SenaConversacionController extends Controller
     private function limpiarCache(): void
     {
         Cache::forget('sena_conversacion_muestras_' . SenaRecognitionService::MODEL_VERSION);
+        Cache::forget('sena_conversacion_muestras_' . SenaRecognitionService::MODEL_VERSION . '_estable_20260714');
         Cache::forget('sena_conversacion_muestras_aprendidas');
     }
 
     private function cargarMuestrasModelo()
+    {
+        return Cache::remember(
+            'sena_conversacion_muestras_' . SenaRecognitionService::MODEL_VERSION . '_estable_20260714',
+            21600,
+            fn () => $this->consultarMuestrasModelo()
+        );
+    }
+
+    private function consultarMuestrasModelo()
     {
         // Python conserva este diccionario en memoria y Laravel solo vuelve a
         // enviarlo cuando cambia el entrenamiento. Se toman referencias
@@ -543,13 +562,19 @@ class SenaConversacionController extends Controller
         array $secuencia,
         $muestras,
         string $revisionModelo,
-        bool $sincronizarModelo = false
-    ): ?array
+        bool $sincronizarModelo = false,
+        bool $modoEntrenamiento = false
+    ): array
     {
         $url = rtrim((string) env('SENAS_PYTHON_URL', 'http://127.0.0.1:5055'), '/');
 
         if ($url === '') {
-            return null;
+            return [
+                'disponible' => false,
+                'requiere_modelo' => false,
+                'prediccion' => null,
+                'muestras_modelo' => 0,
+            ];
         }
 
         try {
@@ -563,13 +588,14 @@ class SenaConversacionController extends Controller
                 ->all();
 
             $respuesta = Http::connectTimeout(1)
-                ->timeout(4)
+                ->timeout($sincronizarModelo ? 10 : 3)
                 ->acceptJson()
                 ->post($url . '/recognize', [
                     'secuencia' => $secuenciaPython,
                     'muestras' => $muestrasPython,
                     'revision_modelo' => $revisionModelo,
                     'actualizar_modelo' => $sincronizarModelo,
+                    'modo_entrenamiento' => $modoEntrenamiento,
                 ]);
 
             if ($respuesta->status() === 409 && $respuesta->json('requiere_modelo')) {
@@ -582,7 +608,12 @@ class SenaConversacionController extends Controller
             }
 
             if (!$respuesta->ok()) {
-                return null;
+                return [
+                    'disponible' => false,
+                    'requiere_modelo' => false,
+                    'prediccion' => null,
+                    'muestras_modelo' => 0,
+                ];
             }
 
             $data = $respuesta->json();
@@ -611,7 +642,12 @@ class SenaConversacionController extends Controller
                 'muestras_modelo' => (int) ($data['muestras_modelo'] ?? $muestras->count()),
             ];
         } catch (\Throwable $e) {
-            return null;
+            return [
+                'disponible' => false,
+                'requiere_modelo' => false,
+                'prediccion' => null,
+                'muestras_modelo' => 0,
+            ];
         }
     }
 
