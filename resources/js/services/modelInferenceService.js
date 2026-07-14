@@ -5,9 +5,9 @@ let loadedModel = null;
 let loadPromise = null;
 
 export const MODEL_CLASSES = [
-  "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
-  "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
-  "del", "space"
+  "cabeza", "cara", "corazon", "dias", "doctor", "dolor", "escalofrios", 
+  "estomago", "fiebre", "garganta", "gracias", "granitos", "gripe", 
+  "hola", "mal", "mareo", "mucho", "nauseas", "tengo", "tos"
 ];
 
 /**
@@ -27,7 +27,7 @@ export function loadModel() {
     .then((model) => {
       loadedModel = model;
       loadPromise = null;
-      console.log("✅ Modelo MLP de TensorFlow.js cargado con éxito.");
+      console.log("✅ Modelo MediSign-ID de TensorFlow.js cargado con éxito.");
       return model;
     })
     .catch((error) => {

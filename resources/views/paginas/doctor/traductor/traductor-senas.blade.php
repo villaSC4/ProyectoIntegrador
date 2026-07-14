@@ -54,9 +54,13 @@
                 </div>
 
                 <div class="traduccion">
-                    <div class="traduccion-titulo">
+                    <div class="traduccion-titulo" style="display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;">
                         <h4>Texto reconocido</h4>
-                        <button type="button" class="boton-secundario" data-reproducir-voz>Reproducir voz</button>
+                        <div class="acciones-traduccion" style="display: flex; gap: 8px;">
+                            <button type="button" class="boton-secundario" data-borrar-palabra style="background-color: #f59e0b; color: white; border: none; padding: 6px 12px; borderRadius: 6px; cursor: pointer;">Borrar última</button>
+                            <button type="button" class="boton-secundario" data-borrar-todo style="background-color: #ef4444; color: white; border: none; padding: 6px 12px; borderRadius: 6px; cursor: pointer;">Limpiar todo</button>
+                            <button type="button" class="boton-secundario" data-reproducir-voz>Reproducir voz</button>
+                        </div>
                     </div>
                     <p id="texto-traduccion-dinamica" data-traduccion style="font-weight: bold; color: #10b981;">Esperando detección de señas...</p>
                 </div>

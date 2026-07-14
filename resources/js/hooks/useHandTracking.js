@@ -1,17 +1,11 @@
-/**
- * useHandTracking.js
- * Custom React hook that orchestrates MediaPipe initialization,
- * webcam streaming, and per-frame hand detection.
- */
-
 import { useRef, useState, useEffect, useCallback } from "react";
+import * as tf from "@tensorflow/tfjs";
 import {
   initializeHandLandmarker,
   detectHands,
   destroyHandLandmarker,
 } from "../services/mediapipeService"; 
 
-// ─── Status enum ──────────────────────────────────────────────────────────────
 export const TrackingStatus = {
   IDLE: "idle",
   LOADING: "loading",
@@ -21,7 +15,34 @@ export const TrackingStatus = {
   PERMISSION_DENIED: "permission_denied",
 };
 
-// ─── Drawing Helpers ──────────────────────────────────────────────────────────
+const CLASES_MEDISIGN = [
+  "cabeza", "cara", "corazon", "dias", "doctor", "dolor", "escalofrios", 
+  "estomago", "fiebre", "garganta", "gracias", "granitos", "gripe", 
+  "hola", "mal", "mareo", "mucho", "nauseas", "tengo", "tos"
+];
+
+function normalizarMano(landmarks) {
+  const wrist = landmarks[0]; 
+
+  const dxScale = landmarks[9].x - wrist.x;
+  const dyScale = landmarks[9].y - wrist.y;
+  const dzScale = landmarks[9].z - wrist.z;
+  let scale = Math.sqrt(dxScale ** 2 + dyScale ** 2 + dzScale ** 2);
+  
+  if (scale < 0.001) {
+    scale = 1.0;
+  }
+
+  const coordsNormalizadas = [];
+  landmarks.forEach((lm) => {
+    coordsNormalizadas.push((lm.x - wrist.x) / scale);
+    coordsNormalizadas.push((lm.y - wrist.y) / scale);
+    coordsNormalizadas.push((lm.z - wrist.z) / scale);
+  });
+
+  return coordsNormalizadas; 
+}
+
 function drawConnections(ctx, landmarks, width, height, color) {
   const CONNECTIONS = [
     [0,1],[1,2],[2,3],[3,4],
@@ -95,7 +116,6 @@ function drawResults(canvas, result, width, height) {
   });
 }
 
-// ─── Hook Pure ────────────────────────────────────────────────────────────────
 export function useHandTracking() {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -107,21 +127,65 @@ export function useHandTracking() {
   const fpsCounterRef = useRef({ frames: 0, lastTime: 0 });
   const runDetectionLoopRef = useRef();
 
+  const tfModelRef = useRef(null);
+
   const [status, setStatus] = useState(TrackingStatus.IDLE);
   const [errorMessage, setErrorMessage] = useState(null);
   const [handData, setHandData] = useState([]);
   const [fps, setFps] = useState(0);
 
-  // Guardamos el estado en un Ref para que el bucle asíncrono tenga acceso instantáneo al valor real
+  const [prediction, setPrediction] = useState("Ninguna");
+  const [probability, setProbability] = useState(0);
+
   const statusRef = useRef(status);
   useEffect(() => { statusRef.current = status; }, [status]);
+
+  useEffect(() => {
+    async function loadSignModel() {
+      try {
+        const loadedModel = await tf.loadLayersModel("/model/model.json");
+        tfModelRef.current = loadedModel;
+        console.log("🚀 Modelo de MediSign-ID cargado exitosamente en React.");
+      } catch (err) {
+        console.error("❌ Error al cargar el modelo TFJS:", err);
+      }
+    }
+    loadSignModel();
+  }, []);
+
+  const predecirSena = async (landmarks) => {
+    if (!tfModelRef.current) return;
+
+    const coordsNormalizadas = normalizarMano(landmarks);
+
+    tf.tidy(() => {
+      const inputTensor = tf.tensor2d([coordsNormalizadas], [1, 63]);
+      const outputTensor = tfModelRef.current.predict(inputTensor);
+      const probabilities = outputTensor.dataSync(); 
+
+      let maxIdx = 0;
+      let maxVal = 0;
+      for (let i = 0; i < probabilities.length; i++) {
+        if (probabilities[i] > maxVal) {
+          maxVal = probabilities[i];
+          maxIdx = i;
+        }
+      }
+
+      if (maxVal > 0.82) {
+        setPrediction(CLASES_MEDISIGN[maxIdx]);
+        setProbability(Math.round(maxVal * 100));
+      } else {
+        setPrediction("Alineando...");
+        setProbability(0);
+      }
+    });
+  };
 
   function runDetectionLoop() {
     const video = videoRef.current;
     const canvas = canvasRef.current;
     
-    // 💥 CORRECCIÓN CRÍTICA 1: Si el landmarker interno no está inicializado en memoria aún,
-    // simplemente esperamos al siguiente frame de animación en lugar de lanzar una excepción fatal.
     if (!video || !canvas || !landmarkerRef.current) {
       if (statusRef.current === TrackingStatus.ACTIVE) {
         animationRef.current = requestAnimationFrame(runDetectionLoopRef.current);
@@ -166,6 +230,13 @@ export function useHandTracking() {
       setHandData(hands);
       drawResults(canvas, result, video.videoWidth, video.videoHeight);
 
+      if (result.landmarks && result.landmarks.length > 0) {
+        predecirSena(result.landmarks[0]);
+      } else {
+        setPrediction("Ninguna");
+        setProbability(0);
+      }
+
       fpsCounterRef.current.frames++;
       
       if (fpsCounterRef.current.lastTime === 0) {
@@ -179,9 +250,7 @@ export function useHandTracking() {
         fpsCounterRef.current.lastTime = now;
       }
     } catch (err) {
-      // 💥 CORRECCIÓN CRÍTICA 2: Capturamos fallos temporales de sincronización asíncrona de MediaPipe
       if (err.message && err.message.includes("not initialized")) {
-        // Silenciamos el log para no inundar la consola y dejamos que se recupere solo
       } else {
         console.error("Error en detección:", err);
       }
@@ -214,7 +283,6 @@ export function useHandTracking() {
       await video.play();
 
       setStatus(TrackingStatus.ACTIVE);
-      // Forzamos el uso del Ref actual en el ciclo inicial
       statusRef.current = TrackingStatus.ACTIVE;
       animationRef.current = requestAnimationFrame(runDetectionLoopRef.current);
     } catch (error) {
@@ -235,6 +303,8 @@ export function useHandTracking() {
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
     setHandData([]);
+    setPrediction("Ninguna");
+    setProbability(0);
   }, []);
 
   useEffect(() => {
@@ -251,6 +321,8 @@ export function useHandTracking() {
     errorMessage,
     handData,
     fps,
+    prediction,     
+    probability,  
     startTracking,
     stopTracking,
   };

@@ -25,16 +25,19 @@ if (ultimoMensaje) {
 
 // ==================== CANAL EN TIEMPO REAL ENTRE VENTANAS ====================
 if ("BroadcastChannel" in window) {
-  const canal = new BroadcastChannel("medisign-paciente");
-  canal.addEventListener("message", (event) => renderMensaje(event.data));
+  const canalDoctor = new BroadcastChannel("medisign-paciente");
+
+  window.onSignLanguageInterpreted = (oracionTraducida) => {
+    const datosMensaje = {
+      mensaje: oracionTraducida,
+      fecha: Date.now()
+    };
+
+    canalDoctor.postMessage(datosMensaje);
+
+    localStorage.setItem("medisignMensajeDoctor", JSON.stringify(datosMensaje));
+  };
 }
-
-window.addEventListener("storage", (event) => {
-  if (event.key === "medisignMensajeDoctor" && event.newValue) {
-    renderMensaje(JSON.parse(event.newValue));
-  }
-});
-
 // ==================== CONTROLES DE LA PANTALLA DEL PACIENTE ====================
 detenerAnimacion.addEventListener("click", () => {
   avatar.classList.toggle("detener");
@@ -44,4 +47,6 @@ detenerAnimacion.addEventListener("click", () => {
 limpiarMensaje.addEventListener("click", () => {
   textoPaciente.textContent = "Esperando indicacion del doctor.";
   fechaPaciente.textContent = "La pantalla se actualizara en tiempo real cuando el doctor escriba, dicte o use un atajo.";
+  
+  localStorage.removeItem("medisignMensajeDoctor");
 });

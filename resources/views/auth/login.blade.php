@@ -43,6 +43,25 @@
 
     <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <script src="{{ asset('js/paginas/Login/login.js') }}"></script>
+    <script>
+        const reproducirIndicacion = () => {
+            if ("speechSynthesis" in window) {
+                window.speechSynthesis.cancel();
+                const voz = new SpeechSynthesisUtterance("Bienvenido, escanee su rostro");
+                voz.lang = "es-PE";
+                voz.rate = 0.95;
+                window.speechSynthesis.speak(voz);
+            }
+        };
+
+        const iniciarFlujoVoz = () => {
+            reproducirIndicacion();
+            setInterval(reproducirIndicacion, 20000);
+        };
+
+        document.addEventListener("click", iniciarFlujoVoz, { once: true });
+        document.addEventListener("keydown", iniciarFlujoVoz, { once: true });
+    </script>
 
 </body>
 </html>

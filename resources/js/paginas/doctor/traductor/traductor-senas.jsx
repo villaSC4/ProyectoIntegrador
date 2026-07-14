@@ -4,6 +4,8 @@ import ComponenteTraductor from './components/ComponenteTraductor';
 
 const salida = document.getElementById("texto-traduccion-dinamica");
 const botonVoz = document.querySelector("[data-reproducir-voz]");
+const botonBorrarPalabra = document.querySelector("[data-borrar-palabra]");
+const botonBorrarTodo = document.querySelector("[data-borrar-todo]");
 const formDoctor = document.querySelector("[data-form-doctor]");
 const mensajeDoctor = document.querySelector("[data-mensaje-doctor]");
 const ultimoMensaje = document.querySelector("[data-ultimo-mensaje]");
@@ -18,6 +20,14 @@ window.onSignLanguageInterpreted = (textoFormado) => {
     if (salida) {
         salida.textContent = textoFormado || "Esperando detección de señas...";
     }
+
+    if (
+        textoFormado && 
+        textoFormado !== "Esperando señas..." && 
+        textoFormado !== "Alineando postura..."
+    ) {
+        publicarMensajeDoctor(textoFormado);
+    }
 };
 
 const leerEnVozAlta = (texto) => {
@@ -31,6 +41,18 @@ const leerEnVozAlta = (texto) => {
 
 botonVoz?.addEventListener("click", () => {
     leerEnVozAlta(salida?.textContent.trim() || "");
+});
+
+botonBorrarPalabra?.addEventListener("click", () => {
+    if (typeof window.onBorrarUltimaPalabra === "function") {
+        window.onBorrarUltimaPalabra();
+    }
+});
+
+botonBorrarTodo?.addEventListener("click", () => {
+    if (typeof window.onLimpiarTodo === "function") {
+        window.onLimpiarTodo();
+    }
 });
 
 const publicarMensajeDoctor = (mensaje) => {
@@ -49,6 +71,10 @@ const abrirPantallaPaciente = () => {
     ventanaPaciente = window.open("/pantalla-paciente", "medisignPantallaPaciente", "width=980,height=720");
     return ventanaPaciente;
 };
+
+botonPantallaPaciente?.addEventListener("click", () => {
+    abrirPantallaPaciente();
+});
 
 formDoctor?.addEventListener("submit", (e) => {
     e.preventDefault();
