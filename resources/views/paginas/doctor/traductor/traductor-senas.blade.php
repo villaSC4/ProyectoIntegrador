@@ -100,7 +100,7 @@
                         <button type="button" class="boton-guardar-frase" data-guardar-frase-entrenada disabled>Detener, revisar y guardar</button>
                     </div>
                     <div class="panel-validacion-sena oculto" data-panel-validacion-sena>
-                        <p>Detecte: <strong data-prediccion-sena>Esperando sena...</strong></p>
+                        <p>Resultado de entrenamiento: <strong data-prediccion-sena>Esperando sena...</strong></p>
                         <div class="acciones-validacion">
                             <button type="button" class="boton-confirmar" data-confirmar-sena>Si, correcto</button>
                             <button type="button" class="boton-corregir" data-corregir-sena>No, corregir</button>

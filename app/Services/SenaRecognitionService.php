@@ -13,8 +13,8 @@ class SenaRecognitionService
 
     private const SAMPLE_FRAMES = 12;
     private const MAX_SEQUENCE_FRAMES = 96;
-    private const MAX_DTW_SAMPLES_PER_CLASS = 8;
-    private const MAX_DTW_CANDIDATES = 48;
+    private const MAX_DTW_SAMPLES_PER_CLASS = 2;
+    private const MAX_DTW_CANDIDATES = 12;
     private const MINIMUM_CONFIDENCE = 0.70;
     private const MINIMUM_INTERMITTENT_TWO_HAND_CONFIDENCE = 0.47;
 
@@ -201,7 +201,13 @@ class SenaRecognitionService
                 continue;
             }
 
-            $totalesPorCodigo[$muestra->codigo] = ($totalesPorCodigo[$muestra->codigo] ?? 0) + 1;
+            $muestrasDeclaradas = is_numeric($muestra->muestras_totales ?? null)
+                ? (int) $muestra->muestras_totales
+                : 0;
+            $totalesPorCodigo[$muestra->codigo] = max(
+                ($totalesPorCodigo[$muestra->codigo] ?? 0) + 1,
+                $muestrasDeclaradas
+            );
             $rapida = $this->distanciaVector(
                 $actual['descriptor'],
                 is_array($guardadas['descriptor'] ?? null) ? $guardadas['descriptor'] : []

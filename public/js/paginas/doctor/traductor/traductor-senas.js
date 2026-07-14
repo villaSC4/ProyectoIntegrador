@@ -85,6 +85,8 @@ let ultimoFrameConMano = 0;
 let ultimosPuntosMano = null;
 let ultimasManos = [];
 let ultimaPrediccionSena = null;
+let codigoRechazadoCorreccion = "";
+let confianzaRechazadoCorreccion = null;
 let temporizadorCapturaPrediccion = null;
 let reconocimientosActivos = 0;
 let siguienteSolicitudReconocimiento = 1;
@@ -117,6 +119,7 @@ let inicioAusenciaManos = 0;
 let esperandoCambioParaNuevaSena = false;
 let ultimoCodigoConfirmado = "";
 let permiteRepetirUltimaSena = true;
+let firmaUltimoCorteSena = null;
 let capturandoCorreccion = false;
 let secuenciaCorreccion = [];
 let correccionVioManos = false;
@@ -124,11 +127,16 @@ let ultimoFrameCorreccionConManos = 0;
 let reconocimientoPausadoPorEntrenamiento = false;
 
 const RETENCION_MANO_OCULTA_MS = 420;
-const DURACION_MINIMA_SENA_MS = 240;
-const DURACION_MAXIMA_SENA_MS = 1600;
-const PAUSA_CIERRE_SENA_MS = 140;
-const UMBRAL_MOVIMIENTO_SENA = 0.045;
+const DURACION_MINIMA_SENA_MS = 260;
+const DURACION_MAXIMA_SENA_ESTATICA_MS = 900;
+const DURACION_MAXIMA_SENA_DINAMICA_MS = 2600;
+const PAUSA_CIERRE_SENA_ESTATICA_MS = 170;
+const PAUSA_CIERRE_SENA_DINAMICA_MS = 280;
+const UMBRAL_MOVIMIENTO_SENA = 0.038;
+const UMBRAL_CAMBIO_POSTURA_SENA = 0.20;
+const UMBRAL_NUEVA_SENA_CON_MANOS = 0.17;
 const FRAMES_CONFIRMACION_MANO = 2;
+const FRAMES_CONFIRMACION_SEGUNDA_MANO = 4;
 const CONFIANZA_MINIMA_MANO = 0.46;
 const TAMANO_MINIMO_MANO = 0.022;
 const TAMANO_MINIMO_MANO_LEJANA = 0.012;
@@ -137,11 +145,11 @@ const CONTEXTO_CORPORAL_VIGENTE_MS = 1400;
 const TAMANO_MAXIMO_MANO = 0.50;
 const DIFERENCIA_MAXIMA_FORMA_MANO = 0.42;
 const AUSENCIA_REINICIA_REPETICION_MS = 900;
-const MAX_SEGMENTOS_EN_COLA = 12;
-const MAX_RECONOCIMIENTOS_CONCURRENTES = 1;
-const TIMEOUT_RECONOCIMIENTO_MS = 7000;
-const COOLDOWN_MISMA_SENA_MS = 3000;
-const COOLDOWN_EMISION_CODIGO_MS = 3000;
+const MAX_SEGMENTOS_EN_COLA = 60;
+const MAX_RECONOCIMIENTOS_CONCURRENTES = 2;
+const TIMEOUT_RECONOCIMIENTO_MS = 6000;
+const COOLDOWN_MISMA_SENA_MS = 900;
+const COOLDOWN_EMISION_CODIGO_MS = 900;
 const VENTANA_CONFIRMACION_ENTRENAMIENTO_MS = 20000;
 const CODIGO_NINGUNA_SENA = "__ninguna_sena__";
 
@@ -478,14 +486,60 @@ const intensidadMovimientoEntreFrames = (anterior, actual) => {
     return suma / Math.max(1, cantidad);
 };
 
+const firmaPosturaFrame = (frame) => {
+    const manos = frame?.manos || [];
+    if (!manos.length) return null;
+
+    const firma = [Math.min(2, manos.length) / 2];
+    manos.slice(0, 2).forEach((mano) => {
+        const muneca = mano[0];
+        const centroPalma = mano[9] || muneca;
+        const escala = Math.max(
+            0.025,
+            Math.hypot(
+                (centroPalma?.x || 0) - (muneca?.x || 0),
+                (centroPalma?.y || 0) - (muneca?.y || 0),
+            ),
+        );
+
+        [4, 8, 12, 16, 20].forEach((indice) => {
+            const punto = mano[indice] || muneca;
+            firma.push(((punto.x || 0) - (muneca.x || 0)) / escala);
+            firma.push(((punto.y || 0) - (muneca.y || 0)) / escala);
+            firma.push(((punto.z || 0) - (muneca.z || 0)) / escala);
+        });
+
+        firma.push(((muneca.x || 0) - 0.5) * 1.2);
+        firma.push(((muneca.y || 0) - 0.5) * 1.2);
+    });
+
+    while (firma.length < 43) firma.push(0);
+    return firma;
+};
+
+const distanciaFirmasPostura = (a, b) => {
+    if (!a || !b) return 0;
+
+    const largo = Math.min(a.length, b.length);
+    if (!largo) return 0;
+
+    let suma = 0;
+    for (let indice = 0; indice < largo; indice += 1) {
+        const diferencia = (a[indice] || 0) - (b[indice] || 0);
+        suma += diferencia * diferencia;
+    }
+
+    return Math.sqrt(suma / largo);
+};
+
 const encolarSegmentoReconocimiento = (secuencia) => {
     if (reconocimientoPausadoPorEntrenamiento) return false;
 
     const segmento = describirSegmento(secuencia);
     if (
         segmento.frames < 8 ||
-        segmento.visibles < 6 ||
-        segmento.duracion < 280
+        segmento.visibles < 7 ||
+        segmento.duracion < 260
     ) return false;
 
     const ultimoEnCola = colaSegmentosReconocimiento.at(-1);
@@ -518,34 +572,59 @@ const finalizarSegmentoEnCurso = (fin) => {
 
     const inicio = Math.max(
         historialManos[0]?.t || segmentoEnCurso.inicio,
-        segmentoEnCurso.inicio - 75,
+        segmentoEnCurso.inicio,
     );
     const secuencia = historialManos.filter(
         (frame) => frame.t >= inicio && frame.t <= fin,
     );
 
     encolarSegmentoReconocimiento(secuencia);
+    firmaUltimoCorteSena = firmaPosturaFrame(secuencia.at(-1));
     segmentoEnCurso = null;
     esperandoCambioParaNuevaSena = true;
+};
+
+const iniciarSegmentoSena = (ahora, frame) => {
+    segmentoEnCurso = {
+        inicio: ahora,
+        ultimoMovimiento: ahora,
+        firmaInicio: firmaPosturaFrame(frame),
+        ultimoCambioPostura: ahora,
+        framesConMovimiento: 0,
+        movimientoAcumulado: 0,
+    };
 };
 
 const actualizarSegmentador = (frame) => {
     const ahora = frame.t || Date.now();
     const hayManos = Boolean(frame.manos?.length);
+    const firmaActual = firmaPosturaFrame(frame);
     const intensidad = intensidadMovimientoEntreFrames(ultimoFrameSegmentador, frame);
-    const hayCambio = intensidad >= UMBRAL_MOVIMIENTO_SENA;
+    const cambioDesdeInicio = distanciaFirmasPostura(
+        segmentoEnCurso?.firmaInicio,
+        firmaActual,
+    );
+    const cambioDesdeUltimoCorte = distanciaFirmasPostura(
+        firmaUltimoCorteSena,
+        firmaActual,
+    );
+    const hayCambio =
+        intensidad >= UMBRAL_MOVIMIENTO_SENA ||
+        cambioDesdeInicio >= UMBRAL_CAMBIO_POSTURA_SENA;
 
     if (!hayManos) {
         inicioAusenciaManos ||= ahora;
         if (
             segmentoEnCurso &&
             ahora - segmentoEnCurso.inicio >= DURACION_MINIMA_SENA_MS &&
-            ahora - segmentoEnCurso.ultimoMovimiento >= 80
+            ahora - segmentoEnCurso.ultimoMovimiento >=
+                PAUSA_CIERRE_SENA_ESTATICA_MS
         ) {
             finalizarSegmentoEnCurso(ahora);
         }
-        if (ahora - inicioAusenciaManos >= 180) {
+        if (ahora - inicioAusenciaManos >= PAUSA_CIERRE_SENA_ESTATICA_MS) {
             esperandoCambioParaNuevaSena = false;
+            firmaUltimoCorteSena = null;
         }
         if (ahora - inicioAusenciaManos >= AUSENCIA_REINICIA_REPETICION_MS) {
             permiteRepetirUltimaSena = true;
@@ -558,15 +637,22 @@ const actualizarSegmentador = (frame) => {
     const primeraManoTrasAusencia = !ultimoFrameSegmentador?.manos?.length;
 
     if (!segmentoEnCurso) {
+        const nuevaSenaPorCambio = esperandoCambioParaNuevaSena &&
+            (hayCambio || cambioDesdeUltimoCorte >= UMBRAL_NUEVA_SENA_CON_MANOS);
+
+        if (nuevaSenaPorCambio) {
+            // La mano puede permanecer visible entre dos palabras. Un cambio
+            // real de postura permite volver a emitir incluso la misma palabra.
+            permiteRepetirUltimaSena = true;
+        }
+
         if (
             !esperandoCambioParaNuevaSena ||
             hayCambio ||
-            primeraManoTrasAusencia
+            primeraManoTrasAusencia ||
+            cambioDesdeUltimoCorte >= UMBRAL_NUEVA_SENA_CON_MANOS
         ) {
-            segmentoEnCurso = {
-                inicio: Math.max(historialManos[0]?.t || ahora, ahora - 90),
-                ultimoMovimiento: ahora,
-            };
+            iniciarSegmentoSena(ahora, frame);
         }
         ultimoFrameSegmentador = frame;
         return;
@@ -574,13 +660,26 @@ const actualizarSegmentador = (frame) => {
 
     if (hayCambio) {
         segmentoEnCurso.ultimoMovimiento = ahora;
+        segmentoEnCurso.ultimoCambioPostura = ahora;
+        segmentoEnCurso.framesConMovimiento += 1;
+        segmentoEnCurso.movimientoAcumulado += intensidad;
     }
 
     const duracion = ahora - segmentoEnCurso.inicio;
     const pausa = ahora - segmentoEnCurso.ultimoMovimiento;
+    const esDinamica =
+        segmentoEnCurso.framesConMovimiento >= 4 ||
+        segmentoEnCurso.movimientoAcumulado >= 0.24;
+    const pausaRequerida = esDinamica
+        ? PAUSA_CIERRE_SENA_DINAMICA_MS
+        : PAUSA_CIERRE_SENA_ESTATICA_MS;
+    const duracionMaxima = esDinamica
+        ? DURACION_MAXIMA_SENA_DINAMICA_MS
+        : DURACION_MAXIMA_SENA_ESTATICA_MS;
+
     if (
         duracion >= DURACION_MINIMA_SENA_MS &&
-        (pausa >= PAUSA_CIERRE_SENA_MS || duracion >= DURACION_MAXIMA_SENA_MS)
+        (pausa >= pausaRequerida || duracion >= duracionMaxima)
     ) {
         finalizarSegmentoEnCurso(ahora);
     }
@@ -777,6 +876,63 @@ const diferenciaFormaMano = (anterior, actual) => {
     }, 0) / puntos.length;
 };
 
+const deteccionesRepresentanMismaMano = (
+    primera,
+    segunda,
+    tolerancia = "estricta",
+) => {
+    if (!primera?.length || !segunda?.length) return false;
+
+    const centroPrimera = centroManoEnCamara(primera);
+    const centroSegunda = centroManoEnCamara(segunda);
+    const distanciaCentros = Math.hypot(
+        centroPrimera.x - centroSegunda.x,
+        centroPrimera.y - centroSegunda.y,
+    );
+    const distanciaMunecas = distanciaPuntosMano2D(primera[0], segunda[0]);
+    const diferenciaForma = diferenciaFormaMano(primera, segunda);
+
+    if (tolerancia === "memoria") {
+        return (
+            distanciaCentros <= 0.09 &&
+            distanciaMunecas <= 0.11 &&
+            diferenciaForma <= 0.20
+        );
+    }
+
+    return (
+        distanciaCentros <= 0.055 &&
+        distanciaMunecas <= 0.07 &&
+        diferenciaForma <= 0.12
+    );
+};
+
+const eliminarDeteccionesDuplicadas = (resultado, candidatas) => {
+    const unicas = [];
+
+    candidatas.forEach((candidata) => {
+        const posicionDuplicada = unicas.findIndex(({ mano }) =>
+            deteccionesRepresentanMismaMano(mano, candidata.mano),
+        );
+
+        if (posicionDuplicada < 0) {
+            unicas.push(candidata);
+            return;
+        }
+
+        const confianzaActual = confianzaDeMano(resultado, candidata.indice);
+        const confianzaGuardada = confianzaDeMano(
+            resultado,
+            unicas[posicionDuplicada].indice,
+        );
+        if (confianzaActual > confianzaGuardada) {
+            unicas[posicionDuplicada] = candidata;
+        }
+    });
+
+    return unicas;
+};
+
 const esManoPlausible = (resultado, indice, mano) => {
     if (!Array.isArray(mano) || mano.length < 21) return false;
     if (!mano.every((punto) => Number.isFinite(punto?.x) && Number.isFinite(punto?.y))) {
@@ -888,9 +1044,13 @@ const asignarEtiquetasManos = (resultado, candidatas, ahora) => {
 const estabilizarManosDetectadas = (resultado) => {
     const ahora = Date.now();
     const landmarks = (resultado.multiHandLandmarks || []).slice(0, 2);
-    const candidatas = landmarks
+    const candidatasPlausibles = landmarks
         .map((mano, indice) => ({ mano, indice }))
         .filter(({ mano, indice }) => esManoPlausible(resultado, indice, mano));
+    const candidatas = eliminarDeteccionesDuplicadas(
+        resultado,
+        candidatasPlausibles,
+    );
     const candidatasConEtiqueta = asignarEtiquetasManos(resultado, candidatas, ahora);
 
     memoriaManos = new Map(
@@ -898,11 +1058,23 @@ const estabilizarManosDetectadas = (resultado) => {
     );
 
     if (candidatasConEtiqueta.length === 0) {
-        const seguimiento = [...memoriaManos.values()]
+        const seguimiento = [];
+        [...memoriaManos.values()]
             .filter((valor) => valor.confirmaciones >= FRAMES_CONFIRMACION_MANO)
-            .map((valor) => valor.mano)
-            .slice(0, 2)
-            .sort((a, b) => (a[0]?.x || 0) - (b[0]?.x || 0));
+            .sort((a, b) => b.t - a.t)
+            .forEach((valor) => {
+                const duplicada = seguimiento.some((mano) =>
+                    deteccionesRepresentanMismaMano(
+                        mano,
+                        valor.mano,
+                        "memoria",
+                    ),
+                );
+                if (!duplicada && seguimiento.length < 2) {
+                    seguimiento.push(valor.mano);
+                }
+            });
+        seguimiento.sort((a, b) => (a[0]?.x || 0) - (b[0]?.x || 0));
 
         return { reales: [], seguimiento, retenidas: seguimiento.length };
     }
@@ -916,13 +1088,21 @@ const estabilizarManosDetectadas = (resultado) => {
                 distanciaPuntosMano2D(anterior.mano[0], mano[0]) <= 0.18
             );
         const confirmaciones = esContinua
-            ? Math.min(FRAMES_CONFIRMACION_MANO, anterior.confirmaciones + 1)
+            ? Math.min(
+                FRAMES_CONFIRMACION_SEGUNDA_MANO,
+                anterior.confirmaciones + 1,
+            )
             : 1;
         memoriaManos.set(etiqueta, { mano, t: ahora, confirmaciones });
     });
 
-    const realesConEtiqueta = candidatasConEtiqueta.filter(({ etiqueta }) =>
-        (memoriaManos.get(etiqueta)?.confirmaciones || 0) >= FRAMES_CONFIRMACION_MANO,
+    const confirmacionesRequeridas = candidatasConEtiqueta.length >= 2
+        ? FRAMES_CONFIRMACION_SEGUNDA_MANO
+        : FRAMES_CONFIRMACION_MANO;
+    const realesConEtiqueta = candidatasConEtiqueta.filter(
+        ({ etiqueta }) =>
+            (memoriaManos.get(etiqueta)?.confirmaciones || 0) >=
+            confirmacionesRequeridas,
     );
 
     const etiquetasVisibles = new Set(
@@ -932,9 +1112,13 @@ const estabilizarManosDetectadas = (resultado) => {
     let retenidas = 0;
 
     memoriaManos.forEach((valor, etiqueta) => {
+        const representaManoVisible = seguimiento.some((mano) =>
+            deteccionesRepresentanMismaMano(mano, valor.mano, "memoria"),
+        );
         if (
             seguimiento.length < 2 &&
             !etiquetasVisibles.has(etiqueta) &&
+            !representaManoVisible &&
             ahora - valor.t <= RETENCION_MANO_OCULTA_MS &&
             valor.confirmaciones >= FRAMES_CONFIRMACION_MANO
         ) {
@@ -1036,18 +1220,19 @@ const procesarPrediccionEstable = (data, secuenciaEnviada = []) => {
             const porcentajeCandidato = Math.round(
                 (Number(candidato.confianza) || 0) * 100,
             );
-            actualizarResultadoEnVivo(
-                `${candidato.texto}: ${porcentajeCandidato}%`,
-                "Coincidencia posible. Haga la sena completa para confirmarla.",
-                "provisional",
-            );
-            actualizarEstadoCamara(
-                `Posible sena: ${candidato.texto} (${porcentajeCandidato}%).`,
-            );
-            actualizarEtiquetaCamara("Posible");
             const modoEntrenamiento =
                 botonToggleEntrenamiento?.dataset.activo === "true";
+
             if (modoEntrenamiento && candidato.codigo) {
+                actualizarResultadoEnVivo(
+                    "Entrenamiento activo",
+                    "Revise el resultado capturado en el panel de entrenamiento.",
+                    "provisional",
+                );
+                actualizarEstadoCamara(
+                    `Resultado de entrenamiento listo: ${candidato.texto} (${porcentajeCandidato}%).`,
+                );
+                actualizarEtiquetaCamara("Entrenando");
                 mostrarValidacionSena(
                     {
                         codigo: candidato.codigo,
@@ -1057,7 +1242,18 @@ const procesarPrediccionEstable = (data, secuenciaEnviada = []) => {
                     },
                     secuenciaEnviada,
                 );
+                return;
             }
+
+            actualizarResultadoEnVivo(
+                `${candidato.texto}: ${porcentajeCandidato}%`,
+                "Coincidencia posible. Haga la sena completa para confirmarla.",
+                "provisional",
+            );
+            actualizarEstadoCamara(
+                `Posible sena: ${candidato.texto} (${porcentajeCandidato}%).`,
+            );
+            actualizarEtiquetaCamara("Posible");
             return;
         }
 
@@ -1075,6 +1271,31 @@ const procesarPrediccionEstable = (data, secuenciaEnviada = []) => {
 
     const confianza = Number(data.confianza) || 0;
     const porcentaje = Math.round(confianza * 100);
+    const modoEntrenamiento =
+        botonToggleEntrenamiento?.dataset.activo === "true";
+
+    if (modoEntrenamiento) {
+        actualizarResultadoEnVivo(
+            "Entrenamiento activo",
+            "El resultado se muestra una sola vez en el panel de entrenamiento.",
+            "provisional",
+        );
+        actualizarEstadoCamara(
+            `Resultado de entrenamiento listo: ${data.texto} (${porcentaje}%).`,
+            "ok",
+        );
+        actualizarEtiquetaCamara("Entrenando");
+        mostrarValidacionSena(
+            {
+                codigo: data.codigo,
+                texto: data.texto,
+                confianza,
+                agregadaAlTexto: false,
+            },
+            secuenciaEnviada,
+        );
+        return;
+    }
 
     actualizarResultadoEnVivo(
         `${data.texto}: ${porcentaje}%`,
@@ -1164,13 +1385,13 @@ const entregarResultadosReconocimientoEnOrden = () => {
     }
 };
 
-const procesarTrabajoReconocimiento = async (trabajo, orden) => {
-    let resultado;
+const solicitarReconocimiento = async (trabajo) => {
     const controladorTiempo = new AbortController();
     const temporizadorTiempo = window.setTimeout(
         () => controladorTiempo.abort(),
         TIMEOUT_RECONOCIMIENTO_MS,
     );
+
     try {
         const token =
             document
@@ -1192,29 +1413,70 @@ const procesarTrabajoReconocimiento = async (trabajo, orden) => {
             }),
         });
 
-        if (!respuesta.ok) throw new Error("No se pudo procesar la sena");
+        const data = await respuesta.json().catch(() => ({}));
+        if (!respuesta.ok) {
+            const error = new Error(
+                data.message || `No se pudo procesar la sena (${respuesta.status})`,
+            );
+            error.reintentable = respuesta.status >= 500;
+            throw error;
+        }
 
-        const data = await respuesta.json();
-        resultado = {
-            data,
-            secuencia: trabajo.secuencia,
-            generacion: trabajo.generacion,
-        };
-    } catch (error) {
-        const errorNormalizado = error?.name === "AbortError"
-            ? new Error("El analisis supero el tiempo maximo y fue cancelado.")
-            : error;
-        resultado = {
-            error: errorNormalizado,
-            generacion: trabajo.generacion,
-        };
+        return data;
     } finally {
         window.clearTimeout(temporizadorTiempo);
-        resultadosReconocimientoPendientes.set(orden, resultado);
-        reconocimientosActivos = Math.max(0, reconocimientosActivos - 1);
-        entregarResultadosReconocimientoEnOrden();
-        procesarColaReconocimiento();
     }
+};
+
+const procesarTrabajoReconocimiento = async (trabajo, orden) => {
+    let resultado;
+
+    for (let intento = 0; intento < 2; intento += 1) {
+        try {
+            const data = await solicitarReconocimiento(trabajo);
+            resultado = {
+                data,
+                secuencia: trabajo.secuencia,
+                generacion: trabajo.generacion,
+            };
+            break;
+        } catch (error) {
+            const reintentable =
+                error?.name === "AbortError" ||
+                error instanceof TypeError ||
+                error?.reintentable === true;
+
+            if (intento === 0 && reintentable) {
+                actualizarResultadoEnVivo(
+                    "Reintentando analisis...",
+                    "La conexion se interrumpio un instante. Recuperando la misma sena.",
+                    "provisional",
+                );
+                continue;
+            }
+
+            const errorNormalizado = error?.name === "AbortError"
+                ? new Error("El analisis supero el tiempo maximo y fue cancelado.")
+                : error;
+            resultado = {
+                error: errorNormalizado,
+                generacion: trabajo.generacion,
+            };
+            break;
+        }
+    }
+
+    if (!resultado) {
+        resultado = {
+            error: new Error("No se pudo completar el analisis de la sena."),
+            generacion: trabajo.generacion,
+        };
+    }
+
+    resultadosReconocimientoPendientes.set(orden, resultado);
+    reconocimientosActivos = Math.max(0, reconocimientosActivos - 1);
+    entregarResultadosReconocimientoEnOrden();
+    procesarColaReconocimiento();
 };
 
 const procesarColaReconocimiento = () => {
@@ -1234,6 +1496,7 @@ const guardarMuestraEntrenamiento = async (
     codigo,
     textoPersonalizado = "",
     secuenciaPersonalizada = null,
+    aprendizaje = {},
 ) => {
     const secuencia = secuenciaPersonalizada?.length
         ? secuenciaPersonalizada
@@ -1277,6 +1540,9 @@ const guardarMuestraEntrenamiento = async (
             body: JSON.stringify({
                 codigo,
                 texto: textoPersonalizado,
+                tipo_aprendizaje: aprendizaje.tipoAprendizaje || "entrenamiento",
+                codigo_rechazado: aprendizaje.codigoRechazado || null,
+                confianza_predicha: aprendizaje.confianzaPredicha ?? null,
                 puntos: puntosCapturados,
                 manos: manosCapturadas,
                 secuencia,
@@ -1318,6 +1584,7 @@ const pausarReconocimientoParaEntrenamiento = () => {
     ultimoFrameSegmentador = null;
     inicioAusenciaManos = 0;
     esperandoCambioParaNuevaSena = false;
+    firmaUltimoCorteSena = null;
     actualizarResultadoEnVivo(
         "Entrenamiento en curso",
         "La traduccion esta pausada mientras se captura esta muestra.",
@@ -1333,6 +1600,7 @@ const reanudarReconocimientoDespuesDeEntrenar = () => {
     ultimoFrameSegmentador = null;
     inicioAusenciaManos = 0;
     esperandoCambioParaNuevaSena = false;
+    firmaUltimoCorteSena = null;
     actualizarResultadoEnVivo(
         "Esperando una sena...",
         "La traduccion en tiempo real esta activa nuevamente.",
@@ -1425,6 +1693,8 @@ const finalizarGrabacionFrase = async () => {
 };
 
 const iniciarCapturaCorreccion = (texto) => {
+    codigoRechazadoCorreccion = ultimaPrediccionSena?.codigo || "";
+    confianzaRechazadoCorreccion = ultimaPrediccionSena?.confianza ?? null;
     limpiarCapturaPrediccion();
     pausarReconocimientoParaEntrenamiento();
     capturandoCorreccion = true;
@@ -1556,6 +1826,11 @@ const guardarCorreccionLibre = async () => {
         null,
         texto,
         secuenciaCapturada,
+        {
+            tipoAprendizaje: "corregida",
+            codigoRechazado: codigoRechazadoCorreccion,
+            confianzaPredicha: confianzaRechazadoCorreccion,
+        },
     );
     if (!guardado) return;
 
@@ -1563,6 +1838,8 @@ const guardarCorreccionLibre = async () => {
     secuenciaCorreccion = [];
     correccionVioManos = false;
     ultimoFrameCorreccionConManos = 0;
+    codigoRechazadoCorreccion = "";
+    confianzaRechazadoCorreccion = null;
     panelCorreccion?.classList.add("oculto");
     reanudarReconocimientoDespuesDeEntrenar();
     window.setTimeout(() => cargarFrasesAprendidas(), 450);
@@ -1614,6 +1891,7 @@ const limpiarEstadoCamaraDesactivada = () => {
     ultimoFrameSegmentador = null;
     inicioAusenciaManos = 0;
     esperandoCambioParaNuevaSena = false;
+    firmaUltimoCorteSena = null;
     ultimasManos = [];
     ultimosPuntosMano = null;
     memoriaManos = new Map();
@@ -1744,6 +2022,7 @@ const iniciarReconocimientoReal = async () => {
     ultimoFrameSegmentador = null;
     inicioAusenciaManos = 0;
     esperandoCambioParaNuevaSena = false;
+    firmaUltimoCorteSena = null;
     ultimoCodigoConfirmado = "";
     permiteRepetirUltimaSena = true;
     actualizarEstadoCamara("Activando camara...");
@@ -2145,11 +2424,20 @@ botonConfirmarSena?.addEventListener("click", async () => {
         ultimaPrediccionSena.codigo,
         ultimaPrediccionSena.texto || "",
         ultimaPrediccionSena.secuencia,
+        {
+            tipoAprendizaje: "confirmada",
+            confianzaPredicha: ultimaPrediccionSena.confianza ?? null,
+        },
     );
     if (guardado) limpiarCapturaPrediccion();
 });
 
 botonCorregirSena?.addEventListener("click", () => {
+    codigoRechazadoCorreccion = ultimaPrediccionSena?.codigo || "";
+    confianzaRechazadoCorreccion = ultimaPrediccionSena?.confianza ?? null;
+    secuenciaCorreccion = ultimaPrediccionSena?.secuencia?.length
+        ? ultimaPrediccionSena.secuencia.slice()
+        : [];
     pausarReconocimientoParaEntrenamiento();
     panelCorreccion?.classList.remove("oculto");
     if (fraseCorreccion) fraseCorreccion.value = "";
@@ -2209,6 +2497,11 @@ botonNingunaSena?.addEventListener("click", async () => {
         CODIGO_NINGUNA_SENA,
         "Ninguna sena",
         prediccion.secuencia,
+        {
+            tipoAprendizaje: "ninguna",
+            codigoRechazado: prediccion.codigo,
+            confianzaPredicha: prediccion.confianza ?? null,
+        },
     );
     if (!guardado) return;
 
